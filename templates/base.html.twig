@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="{{ locale() }}" class="h-full scroll-smooth">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}NeoPHP{% endblock %} · NeoPHP</title>
+    <meta name="description" content="{% block description %}NeoPHP, an ultra modular PHP framework with no dependency.{% endblock %}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body class="flex min-h-full flex-col bg-white font-sans text-ink antialiased">
+{% include '_partials/header.html.twig' %}
+
+<main class="flex-1">
+    {% block body %}{% endblock %}
+</main>
+
+{% include '_partials/footer.html.twig' %}
+
+{% block javascripts %}{% endblock %}
+</body>
+</html>

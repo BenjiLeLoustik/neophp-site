@@ -1,0 +1,34 @@
+providers:
+    users:
+        memory:
+            users:
+                admin:
+                    password: '%env(ADMIN_PASSWORD)%'
+                    roles: [ROLE_ADMIN]
+
+password_hashers:
+    default: auto
+
+firewalls:
+    assets:
+        pattern: ^/builds/
+        security: false
+    main:
+        pattern: ^/
+        provider: users
+        form_login:
+            login_path: app_login
+            default_target_path: /analytics
+            enable_csrf: true
+        logout:
+            path: app_logout
+            target: /
+        login_throttling:
+            max_attempts: 5
+            interval: 60
+
+role_hierarchy:
+    ROLE_ADMIN: [ROLE_USER]
+
+access_control:
+    - { path: ^/analytics, roles: ROLE_ADMIN }

@@ -1,0 +1,7 @@
+default: default
+
+connections:
+    default:
+        url: '%env(DATABASE_URL)%'
+    analytics:
+        url: '%env(ANALYTICS_DATABASE_URL)%'

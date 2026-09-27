@@ -1,0 +1,116 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+{% block description %}{{ description ?? 'NeoPHP documentation' }}{% endblock %}
+
+{% macro navigation(version, versions, features, currentGroup, currentSlug) %}
+    <div>
+        <label for="doc-version-{{ random() }}" class="sr-only">Version</label>
+        <select class="w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm" onchange="window.location = this.value">
+            {% for item in versions %}
+                <option value="{{ path('docs_catalog', {version: item}) }}" {{ item == version ? 'selected' }}>{{ item }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="space-y-0.5">
+        <a href="{{ path('docs_catalog', {version: version}) }}"
+           class="block rounded-md px-2 py-1.5 font-medium text-slate-700 hover:text-brand-600">
+            All documentation
+        </a>
+        <a href="{{ path('docs_guide', {version: version}) }}"
+           class="block rounded-md px-2 py-1.5 font-medium {{ currentSlug is null ? 'bg-brand-50 text-brand-700' : 'text-slate-700 hover:text-brand-600' }}">
+            Getting started
+        </a>
+    </div>
+
+    {% for group, items in features %}
+        <div>
+            <h3 class="mb-2 px-2 text-xs font-semibold tracking-wider text-slate-400 uppercase">{{ group }}</h3>
+            <ul class="grid grid-cols-2 gap-0.5 sm:grid-cols-3 lg:grid-cols-1">
+                {% for slug, name in items %}
+                    <li>
+                        <a href="{{ path('docs_feature', {version: version, group: group, slug: slug}) }}"
+                           class="block rounded-md px-2 py-1.5 {{ group == currentGroup and slug == currentSlug ? 'bg-brand-50 font-medium text-brand-700' : 'text-slate-600 hover:text-brand-600' }}">
+                            {{ name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+{% endmacro %}
+
+{% macro toc(headings) %}
+    <ul class="space-y-2 border-l border-slate-200">
+        {% for heading in headings %}
+            <li><a href="#{{ heading.id }}" class="-ml-px block border-l border-transparent pl-3 text-slate-600 hover:border-brand-600 hover:text-brand-600">{{ heading.text }}</a></li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% block body %}
+    <div class="mx-auto flex max-w-7xl gap-10 px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+        <aside class="hidden w-56 shrink-0 lg:block">
+            <nav class="sticky top-24 max-h-[calc(100vh-7rem)] space-y-8 overflow-y-auto pr-2 text-sm">
+                {{ _self.navigation(version, versions, features, currentGroup, currentSlug) }}
+            </nav>
+        </aside>
+
+        <article class="min-w-0 flex-1">
+            <div class="mb-6 space-y-2 lg:hidden">
+                <details class="group rounded-lg border border-slate-200 bg-white">
+                    <summary class="flex items-center justify-between px-4 py-3 text-sm font-medium">
+                        <span>Documentation menu</span>
+                        <svg class="size-4 text-slate-400 transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
+                    </summary>
+                    <nav class="max-h-[60vh] space-y-6 overflow-y-auto border-t border-slate-200 p-4 text-sm">
+                        {{ _self.navigation(version, versions, features, currentGroup, currentSlug) }}
+                    </nav>
+                </details>
+
+                {% if headings is not empty %}
+                    <details class="group rounded-lg border border-slate-200 bg-white xl:hidden">
+                        <summary class="flex items-center justify-between px-4 py-3 text-sm font-medium">
+                            <span>On this page</span>
+                            <svg class="size-4 text-slate-400 transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
+                        </summary>
+                        <nav class="max-h-[50vh] overflow-y-auto border-t border-slate-200 p-4 text-sm">
+                            {{ _self.toc(headings) }}
+                        </nav>
+                    </details>
+                {% endif %}
+            </div>
+
+            <header class="mb-8 border-b border-slate-200 pb-6">
+                <p class="text-sm font-semibold text-brand-600">{{ currentGroup ? currentGroup|capitalize : 'Guide' }} · {{ version }}</p>
+                <h1 class="mt-2 text-2xl font-extrabold tracking-tight break-words sm:text-3xl lg:text-4xl">{{ title }}</h1>
+            </header>
+
+            {% if headings is not empty %}
+                <details class="group mb-8 hidden rounded-lg border border-slate-200 bg-white lg:block xl:hidden">
+                    <summary class="flex items-center justify-between px-4 py-3 text-sm font-medium">
+                        <span>On this page</span>
+                        <svg class="size-4 text-slate-400 transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
+                    </summary>
+                    <nav class="border-t border-slate-200 p-4 text-sm">
+                        {{ _self.toc(headings) }}
+                    </nav>
+                </details>
+            {% endif %}
+
+            <div class="prose prose-slate max-w-none prose-headings:scroll-mt-24 prose-a:text-brand-600 prose-code:before:content-none prose-code:after:content-none prose-pre:bg-slate-900">
+                {{ content|raw }}
+            </div>
+        </article>
+
+        {% if headings is not empty %}
+            <aside class="hidden w-52 shrink-0 xl:block">
+                <nav class="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto text-sm">
+                    <h3 class="mb-3 text-xs font-semibold tracking-wider text-slate-400 uppercase">On this page</h3>
+                    {{ _self.toc(headings) }}
+                </nav>
+            </aside>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}The ultra modular PHP framework{% endblock %}
+
+{% set advantages = [
+    {icon: 'puzzle', title: 'Ultra modular', text: 'Components, packages and processes are independent: the kernel only loads the providers you use.'},
+    {icon: 'package', title: 'Zero dependency', text: 'Only PHP 8.2. No vendor tree to audit: YAML, Markdown, ORM or Tailwind are written in NeoPHP itself.'},
+    {icon: 'zap', title: 'Attributes everywhere', text: 'Routes, listeners, commands, security and autowiring are declared next to the code with PHP attributes.'},
+    {icon: 'wrench', title: 'Generators', text: 'make:entity, make:form, make:auth and friends ask what they need and write clean code for you.'},
+    {icon: 'database', title: 'Batteries included', text: 'ORM with migrations, forms, validation, security, mailer, translations and a debug toolbar, out of the box.'},
+    {icon: 'palette', title: 'Modern front-end', text: 'Twig or PHP templates, an asset pipeline and Tailwind CSS without Node.js.'},
+] %}
+
+{% set groupLabels = {
+    components: 'The building blocks: HTTP, routing, container, views, forms...',
+    packages: 'Plugged into the kernel: ORM, security, translation, Markdown...',
+    process: 'Around your application: console and installer.',
+} %}
+
+{% block body %}
+    {% import '_partials/icons.html.twig' as ui %}
+
+    {# Hero #}
+    <section class="relative overflow-hidden border-b border-slate-200">
+        <div class="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,var(--color-brand-100),transparent_60%)]"></div>
+        <div class="mx-auto max-w-7xl px-4 py-16 text-center sm:px-6 sm:py-24 lg:px-8 lg:py-32">
+            {% if latestRelease %}
+                <a href="#releases" class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-semibold text-brand-700 shadow-sm ring-1 ring-brand-100 hover:ring-brand-500">
+                    <span class="rounded-full bg-brand-600 px-2 py-0.5 text-white">New</span>
+                    {{ latestRelease }} is out &rarr;
+                </a>
+            {% endif %}
+
+            <h1 class="mx-auto mt-8 max-w-4xl text-4xl font-extrabold tracking-tight text-balance sm:text-6xl lg:text-7xl">
+                The <span class="bg-gradient-to-r from-brand-600 to-violet-500 bg-clip-text text-transparent">ultra modular</span> PHP framework
+            </h1>
+            <p class="mx-auto mt-6 max-w-2xl text-base text-slate-600 sm:text-lg">
+                Build web applications with only the pieces you need. No dependency, no magic: just PHP 8.2 and clean, attribute-driven code.
+            </p>
+
+            <div class="mx-auto mt-10 flex max-w-xl flex-col items-stretch justify-center gap-3 sm:max-w-none sm:flex-row sm:items-center">
+                <a href="{{ path('docs_index') }}" class="rounded-lg bg-brand-600 px-6 py-3 text-center text-sm font-semibold text-white shadow-sm hover:bg-brand-700">Get started</a>
+                <div class="flex min-w-0 items-center gap-2 rounded-lg bg-slate-900 py-1.5 pr-1.5 pl-4 font-mono text-xs text-slate-100 sm:text-sm">
+                    <span class="text-slate-500">$</span>
+                    <code id="install-command" class="min-w-0 flex-1 overflow-x-auto py-1.5 text-left whitespace-nowrap">composer create-project neophp/skeleton my-app</code>
+                    <button type="button" class="shrink-0 rounded-md px-2 py-1.5 text-xs text-slate-400 hover:bg-slate-800 hover:text-white"
+                            onclick="navigator.clipboard.writeText(document.getElementById('install-command').textContent); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 1500)">Copy</button>
+                </div>
+            </div>
+
+            <dl class="mx-auto mt-12 grid max-w-3xl grid-cols-3 gap-4 sm:mt-16 sm:gap-8">
+                {% for stat in [
+                    {value: featureCount, label: 'features'},
+                    {value: '0', label: 'dependencies'},
+                    {value: '8.2+', label: 'PHP'},
+                ] %}
+                    <div>
+                        <dt class="text-xs text-slate-500 sm:text-sm">{{ stat.label }}</dt>
+                        <dd class="mt-1 text-2xl font-bold tracking-tight sm:text-4xl">{{ stat.value }}</dd>
+                    </div>
+                {% endfor %}
+            </dl>
+        </div>
+    </section>
+
+    {# Advantages #}
+    <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center">
+            <p class="text-sm font-semibold text-brand-600">Why NeoPHP</p>
+            <h2 class="mt-2 text-2xl font-bold tracking-tight text-balance sm:text-4xl">Everything you need, nothing you don't</h2>
+        </div>
+        <div class="mt-10 grid gap-4 sm:mt-14 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            {% for item in advantages %}
+                <div class="group rounded-2xl border border-slate-200 p-5 transition hover:border-brand-500 hover:shadow-md sm:p-6">
+                    <span class="grid size-11 place-items-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100 transition group-hover:bg-brand-600 group-hover:text-white">{{ ui.icon(item.icon, 'size-5') }}</span>
+                    <h3 class="mt-4 font-semibold">{{ item.title }}</h3>
+                    <p class="mt-2 text-sm text-slate-600">{{ item.text }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# Code example #}
+    <section class="bg-slate-950 text-white">
+        <div class="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-5 lg:gap-12 lg:px-8">
+            <div class="lg:col-span-2">
+                <p class="text-sm font-semibold text-brand-500">Simple by design</p>
+                <h2 class="mt-2 text-2xl font-bold tracking-tight text-balance sm:text-4xl">A route, a controller, a template.</h2>
+                <p class="mt-4 text-slate-400">Routes are attributes, services are autowired and templates are Twig or plain PHP. Read it once, you know how it works.</p>
+                <a href="{{ path('docs_index') }}" class="mt-8 inline-block text-sm font-semibold text-brand-500 hover:text-brand-100">Read the guide &rarr;</a>
+            </div>
+
+            <div class="min-w-0 space-y-4 lg:col-span-3">
+                <div class="overflow-hidden rounded-xl bg-slate-900 ring-1 ring-white/10">
+                    <p class="truncate border-b border-white/10 px-4 py-2 font-mono text-xs text-slate-400">src/Controller/HelloController.php</p>
+                    <pre class="overflow-x-auto p-4 text-xs leading-relaxed sm:text-sm"><code>{% verbatim %}<span class="text-violet-400">class</span> HelloController <span class="text-violet-400">extends</span> AbstractController
+{
+    <span class="text-slate-500">#[Route('/hello/{name}', name: 'hello')]</span>
+    <span class="text-violet-400">public function</span> <span class="text-sky-400">index</span>(<span class="text-violet-400">string</span> $name): Response
+    {
+        <span class="text-violet-400">return</span> $this-><span class="text-sky-400">render</span>(<span class="text-emerald-400">'hello.html.twig'</span>, [<span class="text-emerald-400">'name'</span> => $name]);
+    }
+}{% endverbatim %}</code></pre>
+                </div>
+                <div class="overflow-hidden rounded-xl bg-slate-900 ring-1 ring-white/10">
+                    <p class="truncate border-b border-white/10 px-4 py-2 font-mono text-xs text-slate-400">templates/hello.html.twig</p>
+                    <pre class="overflow-x-auto p-4 text-xs leading-relaxed sm:text-sm"><code>{% verbatim %}<span class="text-slate-500">{% extends 'base.html.twig' %}</span>
+
+<span class="text-slate-500">{% block body %}</span>
+    &lt;h1&gt;Hello <span class="text-emerald-400">{{ name }}</span>!&lt;/h1&gt;
+<span class="text-slate-500">{% endblock %}</span>{% endverbatim %}</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# Ecosystem #}
+    <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center">
+            <p class="text-sm font-semibold text-brand-600">The ecosystem</p>
+            <h2 class="mt-2 text-2xl font-bold tracking-tight text-balance sm:text-4xl">{{ featureCount }} features, one documentation each</h2>
+        </div>
+        <div class="mt-10 grid gap-4 sm:mt-14 sm:gap-6 lg:grid-cols-3">
+            {% for group, items in features %}
+                <div class="rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-200 sm:p-6">
+                    <div class="flex items-baseline justify-between">
+                        <h3 class="text-lg font-bold capitalize">{{ group }}</h3>
+                        <span class="text-sm text-slate-400">{{ items|length }}</span>
+                    </div>
+                    <p class="mt-1 text-sm text-slate-500">{{ groupLabels[group] ?? '' }}</p>
+                    <div class="mt-5 flex flex-wrap gap-2">
+                        {% for slug, name in items %}
+                            <a href="{{ path('docs_feature', {version: version, group: group, slug: slug}) }}"
+                               class="rounded-md bg-white px-2.5 py-1 text-sm text-slate-700 ring-1 ring-slate-200 hover:text-brand-600 hover:ring-brand-500">{{ name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# Releases #}
+    {% if releases is not empty %}
+        <section id="releases" class="border-t border-slate-200 bg-slate-50">
+            <div class="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+                <h2 class="text-center text-2xl font-bold tracking-tight sm:text-3xl">Latest releases</h2>
+                <ol class="mt-10 ml-1.5 space-y-8 border-l border-slate-300 pl-6 sm:mt-12">
+                    {% for release in releases %}
+                        <li class="relative">
+                            <span class="absolute top-1.5 -left-[1.95rem] size-3 rounded-full {{ loop.first ? 'bg-brand-600 ring-4 ring-brand-100' : 'bg-slate-300' }}"></span>
+                            <p class="font-mono text-sm font-semibold text-brand-600">{{ release.version }}</p>
+                            <p class="mt-1 text-sm break-words text-slate-700 sm:text-base [&_code]:rounded [&_code]:bg-white [&_code]:px-1 [&_code]:text-sm [&_code]:ring-1 [&_code]:ring-slate-200">{{ release.notes|striptags('<code><a>')|raw }}</p>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </section>
+    {% endif %}
+
+    {# Call to action #}
+    <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+        <div class="rounded-3xl bg-brand-600 px-6 py-12 text-center text-white sm:px-16 sm:py-16">
+            <h2 class="text-2xl font-bold tracking-tight sm:text-4xl">Ready to build?</h2>
+            <p class="mx-auto mt-4 max-w-xl text-brand-100">Create your first NeoPHP application in less than five minutes.</p>
+            <a href="{{ path('docs_index') }}" class="mt-8 inline-block rounded-lg bg-white px-6 py-3 text-sm font-semibold text-brand-700 hover:bg-brand-50">Start with the guide</a>
+        </div>
+    </section>
+{% endblock %}

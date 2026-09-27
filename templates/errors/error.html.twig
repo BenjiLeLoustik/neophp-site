@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% set messages = {
+    400: {title: 'Bad request', text: 'The request could not be understood. Check the address or the form you sent.'},
+    401: {title: 'Sign in required', text: 'You need to be signed in to see this page.'},
+    403: {title: 'Access denied', text: 'You are not allowed to see this page.'},
+    404: {title: 'Page not found', text: 'This page does not exist, or it has moved. The documentation may have what you are looking for.'},
+    405: {title: 'Method not allowed', text: 'This page cannot be reached this way.'},
+    419: {title: 'Page expired', text: 'The form has expired. Go back, reload the page and try again.'},
+    429: {title: 'Too many requests', text: 'Slow down a little and try again in a moment.'},
+    500: {title: 'Something went wrong', text: 'An unexpected error occurred on our side. It has been logged and we will look into it.'},
+    503: {title: 'Back soon', text: 'The website is under maintenance. Please come back in a few minutes.'},
+} %}
+{% set error = messages[status] ?? (status >= 500 ? messages[500] : {title: phrase, text: 'The request could not be completed.'}) %}
+
+{% block title %}{{ error.title }}{% endblock %}
+
+{% block body %}
+    <section class="relative overflow-hidden">
+        <div class="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,var(--color-brand-50),transparent_65%)]"></div>
+
+        <div class="mx-auto flex max-w-2xl flex-col items-center px-4 py-20 text-center sm:py-32">
+            <p class="bg-gradient-to-b from-brand-600 to-brand-100 bg-clip-text font-mono text-8xl font-extrabold tracking-tighter text-transparent sm:text-9xl">{{ status }}</p>
+
+            <h1 class="mt-6 text-2xl font-bold tracking-tight text-balance sm:text-4xl">{{ error.title }}</h1>
+            <p class="mt-4 max-w-md text-base text-slate-600 sm:text-lg">{{ error.text }}</p>
+
+            {% if status == 404 %}
+                <p class="mt-4 max-w-full truncate rounded-md bg-slate-100 px-3 py-1 font-mono text-sm text-slate-500">{{ path }}</p>
+            {% endif %}
+
+            <div class="mt-10 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                <a href="{{ path('home') }}" class="rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-brand-700">Back to home</a>
+                {% if status == 401 %}
+                    <a href="{{ path('app_login') }}" class="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-300 hover:ring-brand-500">Sign in</a>
+                {% elseif status < 500 %}
+                    <a href="{{ path('docs_index') }}" class="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-300 hover:ring-brand-500">Browse the documentation</a>
+                {% else %}
+                    <button type="button" onclick="window.location.reload()" class="rounded-lg bg-white px-6 py-3 text-sm font-semibold text-slate-700 ring-1 ring-slate-300 hover:ring-brand-500">Try again</button>
+                {% endif %}
+            </div>
+
+            {% if status == 404 %}
+                <form action="{{ path('docs_index') }}" method="get" class="mt-12 w-full max-w-md">
+                    <label for="error-search" class="text-sm text-slate-500">Or search the documentation</label>
+                    <div class="mt-2 flex gap-2">
+                        <input type="search" id="error-search" name="q" placeholder="routing, forms, security..."
+                               class="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none">
+                        <button type="submit" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">Search</button>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}

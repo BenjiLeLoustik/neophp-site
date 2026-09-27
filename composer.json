@@ -1,0 +1,30 @@
+{
+    "name": "neophp/skeleton",
+    "description": "NeoPHP application skeleton.",
+    "type": "project",
+    "license": "MIT",
+    "keywords": [
+        "neophp",
+        "skeleton",
+        "framework"
+    ],
+    "require": {
+        "php": ">=8.2",
+        "neophp/framework": "^1.0",
+        "twig/twig": "^3.30"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "scripts": {
+        "neo:install": "@php vendor/bin/neo install",
+        "post-create-project-cmd": "@neo:install"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

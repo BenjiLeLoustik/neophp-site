@@ -1,0 +1,9 @@
+services:
+    _defaults:
+        shared: true
+
+    App\:
+        resource: ../src/
+        exclude:
+            - ../src/Kernel.php
+            - ../src/Entity/
