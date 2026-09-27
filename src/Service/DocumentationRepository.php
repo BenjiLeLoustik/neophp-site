@@ -43,7 +43,7 @@ class DocumentationRepository
         $features = [];
 
         foreach (self::GROUPS as $group) {
-            foreach (glob(sprintf('%s/src/%s/*/docs/%s/README.md', $this->frameworkPath, $group, $version)) ?: [] as $file) {
+            foreach (glob(sprintf('%s/src/%s/*/Docs/%s/README.md', $this->frameworkPath, $group, $version)) ?: [] as $file) {
                 $name = basename(dirname($file, 3));
                 $features[$group][strtolower($name)] = $name;
             }
@@ -65,7 +65,7 @@ class DocumentationRepository
             return null;
         }
 
-        return $this->read(sprintf('%s/src/%s/%s/docs/%s/README.md', $this->frameworkPath, $group, $name, $version));
+        return $this->read(sprintf('%s/src/%s/%s/Docs/%s/README.md', $this->frameworkPath, $group, $name, $version));
     }
 
     public function getFeatureName(string $version, string $group, string $slug): ?string
