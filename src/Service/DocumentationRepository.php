@@ -10,22 +10,20 @@ use NeoPHP\Package\Markdown\Document\MarkdownDocument;
 
 class DocumentationRepository
 {
-
     public const GROUPS = ['components', 'packages', 'process'];
 
+    protected ?array $roots = null;
+
     public function __construct(
-        protected MarkdownParserInterface $markdownParser,
-        #[Autowire('%kernel.root_path%/vendor/neophp/framework')]
-        protected string $frameworkPath,
+        protected MarkdownParserInterface $markdown,
+        #[Autowire('%kernel.root_path%/vendor/neophp/framework')] protected string $frameworkPath,
+        #[Autowire('%kernel.root_path%/var/framework')] protected string $syncedPath,
     ) {
     }
 
     public function getVersions(): array
     {
-        $versions = array_map('basename', glob($this->frameworkPath . '/docs/v*', GLOB_ONLYDIR) ?: []);
-        usort($versions, static fn (string $a, string $b): int => strnatcmp($b, $a));
-
-        return $versions;
+        return array_keys($this->getRoots());
     }
 
     public function getLatestVersion(): ?string
@@ -35,17 +33,31 @@ class DocumentationRepository
 
     public function hasVersion(string $version): bool
     {
-        return in_array($version, $this->getVersions());
+        return isset($this->getRoots()[$version]);
+    }
+
+    public function isSynchronized(): bool
+    {
+        return glob($this->syncedPath . '/v*/docs', GLOB_ONLYDIR) !== [];
     }
 
     public function getFeatures(string $version): array
     {
+        $root = $this->getRoots()[$version] ?? null;
         $features = [];
 
+        if ($root === null) {
+            return [];
+        }
+
         foreach (self::GROUPS as $group) {
-            foreach (glob(sprintf('%s/src/%s/*/Docs/%s/README.md', $this->frameworkPath, $group, $version)) ?: [] as $file) {
+            foreach (glob(sprintf('%s/src/%s/*/[Dd]ocs/%s/README.md', $root, $group, $version)) ?: [] as $file) {
                 $name = basename(dirname($file, 3));
                 $features[$group][strtolower($name)] = $name;
+            }
+
+            if (isset($features[$group])) {
+                ksort($features[$group]);
             }
         }
 
@@ -54,18 +66,23 @@ class DocumentationRepository
 
     public function getGuide(string $version): ?MarkdownDocument
     {
-        return $this->read(sprintf('%s/docs/%s/README.md', $this->frameworkPath, $version));
+        $root = $this->getRoots()[$version] ?? null;
+
+        return $root !== null ? $this->read(sprintf('%s/docs/%s/README.md', $root, $version)) : null;
     }
 
     public function getFeature(string $version, string $group, string $slug): ?MarkdownDocument
     {
+        $root = $this->getRoots()[$version] ?? null;
         $name = $this->getFeatureName($version, $group, $slug);
 
-        if ($name === null) {
+        if ($root === null || $name === null) {
             return null;
         }
 
-        return $this->read(sprintf('%s/src/%s/%s/Docs/%s/README.md', $this->frameworkPath, $group, $name, $version));
+        $files = glob(sprintf('%s/src/%s/%s/[Dd]ocs/%s/README.md', $root, $group, $name, $version)) ?: [];
+
+        return $files !== [] ? $this->read($files[0]) : null;
     }
 
     public function getFeatureName(string $version, string $group, string $slug): ?string
@@ -112,7 +129,7 @@ class DocumentationRepository
 
         foreach (preg_split('/\R/', $section->getMarkdown()) ?: [] as $line) {
             if (preg_match('/^- (\S+) — (.+)$/u', trim($line), $match) === 1) {
-                $releases[] = ['version' => $match[1], 'notes' => $this->markdownParser->toHtml($match[2])];
+                $releases[] = ['version' => $match[1], 'notes' => $this->markdown->toHtml($match[2])];
             }
 
             if (count($releases) >= $limit) {
@@ -123,9 +140,35 @@ class DocumentationRepository
         return $releases;
     }
 
-    protected function read(string $file): ?MarkdownDocument
+    protected function getRoots(): array
     {
-        return is_file($file) ? $this->markdownParser->get($file) : null;
+        if ($this->roots !== null) {
+            return $this->roots;
+        }
+
+        $roots = [];
+
+        foreach (glob($this->syncedPath . '/v*/docs/v*', GLOB_ONLYDIR) ?: [] as $directory) {
+            $version = basename($directory);
+
+            if ($version === basename(dirname($directory, 2))) {
+                $roots[$version] = dirname($directory, 2);
+            }
+        }
+
+        if ($roots === []) {
+            foreach (glob($this->frameworkPath . '/docs/v*', GLOB_ONLYDIR) ?: [] as $directory) {
+                $roots[basename($directory)] = $this->frameworkPath;
+            }
+        }
+
+        uksort($roots, static fn (string $a, string $b): int => strnatcmp($b, $a));
+
+        return $this->roots = $roots;
     }
 
+    protected function read(string $file): ?MarkdownDocument
+    {
+        return is_file($file) ? $this->markdown->get($file) : null;
+    }
 }
