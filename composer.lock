@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "neophp/framework",
-            "version": "v1.20.2",
+            "version": "v1.31.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/NeoPHP-Framework/neophp.git",
-                "reference": "acfa1b28040ebfb4ae7c830086f8cc42e8dd8978"
+                "reference": "2f72fb5c41ca7c64af0bebf7991da357bc8dd390"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/NeoPHP-Framework/neophp/zipball/acfa1b28040ebfb4ae7c830086f8cc42e8dd8978",
-                "reference": "acfa1b28040ebfb4ae7c830086f8cc42e8dd8978",
+                "url": "https://api.github.com/repos/NeoPHP-Framework/neophp/zipball/2f72fb5c41ca7c64af0bebf7991da357bc8dd390",
+                "reference": "2f72fb5c41ca7c64af0bebf7991da357bc8dd390",
                 "shasum": ""
             },
             "require": {
@@ -27,7 +27,9 @@
                 "twig/twig": "<3.0"
             },
             "suggest": {
-                "ext-dom": "Required to convert HTML to Markdown (Markdown package: parse() and convert()) and to read XLIFF translation files (Translation package)",
+                "ext-apcu": "Required by the \"apcu\" adapter of the Cache component (in-memory shared cache pools; set apc.enable_cli=1 to use it from the console)",
+                "ext-curl": "Recommended by the HttpClient component (faster transport, parallel requests with requestMany()); the stream transport is used without it",
+                "ext-dom": "Required by the Serializer XML encoder, to convert HTML to Markdown (Markdown package: parse() and convert()) and to read XLIFF translation files (Translation package)",
                 "ext-fileinfo": "Required to detect the mime type of uploaded files (File and Image constraints) and of email attachments",
                 "ext-mbstring": "Required by the Markdown package (heading anchors) and recommended for UTF-8 text",
                 "ext-openssl": "Required to send emails over SSL/TLS (smtps:// or STARTTLS) and to download the Tailwind CLI (tailwind:install)",
@@ -58,13 +60,16 @@
             ],
             "description": "NeoPHP - an ultra modular PHP framework.",
             "keywords": [
+                "api",
                 "database",
                 "debug",
                 "form",
                 "framework",
                 "http",
+                "http-client",
                 "mailer",
                 "neophp",
+                "openapi",
                 "orm",
                 "routing",
                 "security",
@@ -73,9 +78,9 @@
             ],
             "support": {
                 "issues": "https://github.com/NeoPHP-Framework/neophp/issues",
-                "source": "https://github.com/NeoPHP-Framework/neophp/tree/v1.20.2"
+                "source": "https://github.com/NeoPHP-Framework/neophp/tree/v1.31.0"
             },
-            "time": "2026-09-26T11:22:16+00:00"
+            "time": "2026-09-28T09:50:44+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
