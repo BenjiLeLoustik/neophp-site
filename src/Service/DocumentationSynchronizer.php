@@ -43,8 +43,14 @@ class DocumentationSynchronizer
         foreach ($branches as $branch) {
             $commit = $this->git(sprintf('--git-dir=%s rev-parse --short %s', escapeshellarg($mirror), escapeshellarg($branch)));
             $target = $this->path . '/' . $branch;
+            $paths = ['docs', 'src'];
+            $changelog = $this->exists($mirror, $branch, 'CHANGELOG.md');
 
-            if (is_file($target . '/.commit') && trim((string)file_get_contents($target . '/.commit')) === $commit) {
+            if ($changelog) {
+                $paths[] = 'CHANGELOG.md';
+            }
+
+            if (is_file($target . '/.commit') && trim((string)file_get_contents($target . '/.commit')) === $commit && (!$changelog || is_file($target . '/CHANGELOG.md'))) {
                 $result[$branch] = [$commit, false];
 
                 continue;
@@ -54,9 +60,10 @@ class DocumentationSynchronizer
             $this->remove($temporary);
             mkdir($temporary, 0775, true);
             $this->run(sprintf(
-                'git --git-dir=%s archive --format=tar %s -- docs src | tar -x -C %s',
+                'git --git-dir=%s archive --format=tar %s -- %s | tar -x -C %s',
                 escapeshellarg($mirror),
                 escapeshellarg($branch),
+                implode(' ', array_map('escapeshellarg', $paths)),
                 escapeshellarg($temporary),
             ));
             file_put_contents($temporary . '/.commit', $commit);
@@ -78,6 +85,13 @@ class DocumentationSynchronizer
         }
 
         return $result;
+    }
+
+    protected function exists(string $mirror, string $branch, string $path): bool
+    {
+        exec(sprintf('git --git-dir=%s cat-file -e %s 2>&1', escapeshellarg($mirror), escapeshellarg($branch . ':' . $path)), $output, $code);
+
+        return $code === 0;
     }
 
     protected function git(string $arguments): string

@@ -119,15 +119,15 @@ class DocumentationRepository
 
     public function getReleases(string $version, int $limit = 4): array
     {
-        $section = $this->getGuide($version)?->getSection('Changelog');
+        $changelog = $this->getChangelog($version);
 
-        if ($section === null) {
+        if ($changelog === null) {
             return [];
         }
 
         $releases = [];
 
-        foreach (preg_split('/\R/', $section->getMarkdown()) ?: [] as $line) {
+        foreach (preg_split('/\R/', $changelog) ?: [] as $line) {
             if (preg_match('/^- (\S+) — (.+)$/u', trim($line), $match) === 1) {
                 $releases[] = ['version' => $match[1], 'notes' => $this->markdown->toHtml($match[2])];
             }
@@ -138,6 +138,21 @@ class DocumentationRepository
         }
 
         return $releases;
+    }
+
+    public function getChangelog(string $version): ?string
+    {
+        $root = $this->getRoots()[$version] ?? null;
+
+        if ($root === null) {
+            return null;
+        }
+
+        if (is_file($root . '/CHANGELOG.md')) {
+            return (string) file_get_contents($root . '/CHANGELOG.md');
+        }
+
+        return $this->getGuide($version)?->getSection('Changelog')?->getMarkdown();
     }
 
     protected function getRoots(): array
