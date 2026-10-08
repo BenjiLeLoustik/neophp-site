@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "neophp/framework",
-            "version": "v1.31.0",
+            "version": "v1.39.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/NeoPHP-Framework/neophp.git",
-                "reference": "2f72fb5c41ca7c64af0bebf7991da357bc8dd390"
+                "reference": "353d3d723b6b4ac78a9e4137200d547928d8c591"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/NeoPHP-Framework/neophp/zipball/2f72fb5c41ca7c64af0bebf7991da357bc8dd390",
-                "reference": "2f72fb5c41ca7c64af0bebf7991da357bc8dd390",
+                "url": "https://api.github.com/repos/NeoPHP-Framework/neophp/zipball/353d3d723b6b4ac78a9e4137200d547928d8c591",
+                "reference": "353d3d723b6b4ac78a9e4137200d547928d8c591",
                 "shasum": ""
             },
             "require": {
@@ -26,6 +26,10 @@
             "conflict": {
                 "twig/twig": "<3.0"
             },
+            "require-dev": {
+                "phpstan/phpstan": "^2.1",
+                "twig/twig": "^3.0"
+            },
             "suggest": {
                 "ext-apcu": "Required by the \"apcu\" adapter of the Cache component (in-memory shared cache pools; set apc.enable_cli=1 to use it from the console)",
                 "ext-curl": "Recommended by the HttpClient component (faster transport, parallel requests with requestMany()); the stream transport is used without it",
@@ -33,10 +37,12 @@
                 "ext-fileinfo": "Required to detect the mime type of uploaded files (File and Image constraints) and of email attachments",
                 "ext-mbstring": "Required by the Markdown package (heading anchors) and recommended for UTF-8 text",
                 "ext-openssl": "Required to send emails over SSL/TLS (smtps:// or STARTTLS) and to download the Tailwind CLI (tailwind:install)",
+                "ext-pcntl": "Recommended by the Queue package (graceful stop of queue:work on SIGTERM / SIGINT) and the Scheduler package (schedule:work)",
                 "ext-pdo": "Required to use the Database component",
                 "ext-pdo_mysql": "Required to connect to MySQL / MariaDB databases",
                 "ext-pdo_pgsql": "Required to connect to PostgreSQL databases",
                 "ext-pdo_sqlite": "Required to connect to SQLite databases",
+                "ext-redis": "Required by the redis transport of the Queue package (redis://)",
                 "ext-zip": "Required to archive log files as .zip",
                 "twig/twig": "Required to render .twig templates (^3.0)"
             },
@@ -78,9 +84,9 @@
             ],
             "support": {
                 "issues": "https://github.com/NeoPHP-Framework/neophp/issues",
-                "source": "https://github.com/NeoPHP-Framework/neophp/tree/v1.31.0"
+                "source": "https://github.com/NeoPHP-Framework/neophp/tree/v1.39.0"
             },
-            "time": "2026-09-28T09:50:44+00:00"
+            "time": "2026-10-03T06:27:03+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -238,16 +244,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.38.2",
+            "version": "v1.43.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6"
+                "reference": "4d5d331bf731e0aedbc6b2f5e61135b7b7996a72"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
-                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
+                "reference": "4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
                 "shasum": ""
             },
             "require": {
@@ -299,7 +305,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.38.2"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.43.0"
             },
             "funding": [
                 {
@@ -319,7 +325,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-27T06:59:30+00:00"
+            "time": "2026-09-24T15:19:04+00:00"
         },
         {
             "name": "twig/twig",
