@@ -1,16 +1,16 @@
 {
-    "name": "neophp/skeleton",
-    "description": "NeoPHP application skeleton.",
+    "name": "neophp/site",
+    "description": "The website of the NeoPHP framework.",
     "type": "project",
     "license": "MIT",
     "keywords": [
         "neophp",
-        "skeleton",
-        "framework"
+        "website",
+        "documentation"
     ],
     "require": {
         "php": ">=8.2",
-        "neophp/framework": "^1.0",
+        "neophp/framework": "^2.0",
         "twig/twig": "^3.30"
     },
     "autoload": {
