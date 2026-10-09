@@ -4,30 +4,34 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "267fcac65e502707ee165afda830a898",
+    "content-hash": "e607db8bc8e6a5b7cead361e139f73e4",
     "packages": [
         {
             "name": "neophp/framework",
-            "version": "v1.39.0",
+            "version": "v2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/NeoPHP-Framework/neophp.git",
-                "reference": "353d3d723b6b4ac78a9e4137200d547928d8c591"
+                "reference": "3d0951eaf035a70a36f59b805fb3a6a90fd45286"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/NeoPHP-Framework/neophp/zipball/353d3d723b6b4ac78a9e4137200d547928d8c591",
-                "reference": "353d3d723b6b4ac78a9e4137200d547928d8c591",
+                "url": "https://api.github.com/repos/NeoPHP-Framework/neophp/zipball/3d0951eaf035a70a36f59b805fb3a6a90fd45286",
+                "reference": "3d0951eaf035a70a36f59b805fb3a6a90fd45286",
                 "shasum": ""
             },
             "require": {
+                "ext-ctype": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "ext-tokenizer": "*",
                 "php": ">=8.2"
             },
             "conflict": {
                 "twig/twig": "<3.0"
             },
             "require-dev": {
-                "phpstan/phpstan": "^2.1",
+                "phpstan/phpstan": "^2.2",
                 "twig/twig": "^3.0"
             },
             "suggest": {
@@ -35,7 +39,6 @@
                 "ext-curl": "Recommended by the HttpClient component (faster transport, parallel requests with requestMany()); the stream transport is used without it",
                 "ext-dom": "Required by the Serializer XML encoder, to convert HTML to Markdown (Markdown package: parse() and convert()) and to read XLIFF translation files (Translation package)",
                 "ext-fileinfo": "Required to detect the mime type of uploaded files (File and Image constraints) and of email attachments",
-                "ext-mbstring": "Required by the Markdown package (heading anchors) and recommended for UTF-8 text",
                 "ext-openssl": "Required to send emails over SSL/TLS (smtps:// or STARTTLS) and to download the Tailwind CLI (tailwind:install)",
                 "ext-pcntl": "Recommended by the Queue package (graceful stop of queue:work on SIGTERM / SIGINT) and the Scheduler package (schedule:work)",
                 "ext-pdo": "Required to use the Database component",
@@ -84,9 +87,9 @@
             ],
             "support": {
                 "issues": "https://github.com/NeoPHP-Framework/neophp/issues",
-                "source": "https://github.com/NeoPHP-Framework/neophp/tree/v1.39.0"
+                "source": "https://github.com/NeoPHP-Framework/neophp/tree/v2.0.0"
             },
-            "time": "2026-10-03T06:27:03+00:00"
+            "time": "2026-10-09T13:26:10+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",

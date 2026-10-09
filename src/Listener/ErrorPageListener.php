@@ -7,10 +7,11 @@ namespace App\Listener;
 use NeoPHP\Component\Container\Attribute\Autowire;
 use NeoPHP\Component\Event\Attribute\AsListener;
 use NeoPHP\Component\Exception\ExceptionManager;
+use NeoPHP\Component\Exception\ExceptionManagerInterface;
 use NeoPHP\Component\Http\Response\Response;
 use NeoPHP\Component\Kernel\Event\ExceptionEvent;
 use NeoPHP\Component\Logger\Contract\LoggerInterface;
-use NeoPHP\Component\View\Contract\ViewInterface;
+use NeoPHP\Component\View\ViewManagerInterface;
 use Throwable;
 
 #[AsListener(priority: -10)]
@@ -19,8 +20,8 @@ class ErrorPageListener
     public const PREVIEW = '_error_preview';
 
     public function __construct(
-        protected ViewInterface $view,
-        protected ExceptionManager $exceptions,
+        protected ViewManagerInterface $view,
+        protected ExceptionManagerInterface $exceptions,
         protected LoggerInterface $logger,
         #[Autowire(param: 'kernel.debug')] protected bool $debug,
     ) {

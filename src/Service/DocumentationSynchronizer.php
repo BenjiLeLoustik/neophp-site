@@ -4,7 +4,7 @@ namespace App\Service;
 
 use FilesystemIterator;
 use NeoPHP\Component\Container\Attribute\Autowire;
-use NeoPHP\Component\Exception\FrameworkException;
+use NeoPHP\Component\Exception\Exception\FrameworkException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 

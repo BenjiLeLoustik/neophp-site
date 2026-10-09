@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Service;
 
 use NeoPHP\Component\Container\Attribute\Autowire;
-use NeoPHP\Package\Markdown\Contract\MarkdownParserInterface;
 use NeoPHP\Package\Markdown\Document\MarkdownDocument;
+use NeoPHP\Package\Markdown\MarkdownManagerInterface;
 
 class DocumentationRepository
 {
@@ -15,7 +15,7 @@ class DocumentationRepository
     protected ?array $roots = null;
 
     public function __construct(
-        protected MarkdownParserInterface $markdown,
+        protected MarkdownManagerInterface $markdown,
         #[Autowire('%kernel.root_path%/vendor/neophp/framework')] protected string $frameworkPath,
         #[Autowire('%kernel.root_path%/var/framework')] protected string $syncedPath,
     ) {
