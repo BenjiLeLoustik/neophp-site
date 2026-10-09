@@ -1,7 +1,7 @@
 # neophp-site
 
 The website of the NeoPHP framework: https://neophp.fr.
-Built with NeoPHP, Twig and Tailwind CSS; the documentation is read from the `vX.x` branches of the framework repository.
+Built with NeoPHP 2, Twig and Tailwind CSS; the documentation is read from the `vX.x` branches of the framework repository.
 
 ## Summary
 
@@ -30,6 +30,7 @@ composer install
 
 ```dotenv
 DATABASE_URL="mysql://root:@127.0.0.1:3306/neophp_site?charset=utf8mb4"
+ANALYTICS_DATABASE_URL="sqlite:///%kernel.root_path%/var/analytics.db"
 ADMIN_PASSWORD='hash from php bin/neo security:hash-password'
 ```
 
@@ -57,7 +58,7 @@ Icons are inline [Lucide](https://lucide.dev) SVGs (`templates/_partials/icons.h
 
 ## Documentation
 
-`php bin/neo docs:sync` mirrors the framework repository (`FRAMEWORK_REPOSITORY` in `.env`) into `var/framework/` and exports the `docs/` and `src/` folders of every `vX.x` branch into `var/framework/vX.x/`. The most recent version is the default one.
+`php bin/neo docs:sync` mirrors the framework repository (`FRAMEWORK_REPOSITORY` in `.env`) into `var/framework/` and exports the `docs/` and `src/` folders and the `CHANGELOG.md` file of every `vX.x` branch into `var/framework/vX.x/`. The most recent version is the default one; the latest releases of the home page are read from its `CHANGELOG.md`.
 
 Without synchronized docs, the website reads `vendor/neophp/framework`.
 
@@ -65,11 +66,11 @@ Framework branches:
 
 - `main`: stable version, tagged and published on Packagist (used by `composer.json`)
 - `dev`: version in progress, never published on the website
-- `vX.x`: documentation of each version
+- `vX.x`: documentation of each version (`v1.x`, `v2.x`...)
 
 ## Analytics
 
-Page views are stored in SQLite (connection `analytics`, `var/analytics.db`) by a listener of `TerminateEvent`, after the response is sent. No IP address and no cookie: the visitor is a daily hash of the IP, the user agent and `APP_SECRET`. Bots, assets and the admin pages are ignored.
+Page views are stored in SQLite (connection `analytics`, `ANALYTICS_DATABASE_URL`, `var/analytics.db`) by a listener of `TerminateEvent`, after the response is sent. No IP address and no cookie: the visitor is a daily hash of the IP, the user agent and `APP_SECRET`. Bots, assets and the admin pages are ignored.
 
 The dashboard `/analytics` requires the `ROLE_ADMIN` user defined in `config/packages/security.yaml`.
 
