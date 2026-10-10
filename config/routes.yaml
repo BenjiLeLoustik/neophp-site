@@ -1,3 +1,6 @@
 controllers:
     resource: ../src/Controller/
     type: attribute
+    
+package_admin:
+    resource: '@admin'

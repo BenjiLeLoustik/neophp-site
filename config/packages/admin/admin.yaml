@@ -1,0 +1,42 @@
+title: NeoPHP
+role: ROLE_ADMIN
+per_page: 25
+entity_namespace: App\Entity
+
+menu:
+    - { type: dashboard }
+    - { type: section, label: Site }
+    - type: submenu
+      label: Statistics
+      icon: chart
+      children:
+          - { type: link, label: Analytics, route: admin_analytics, icon: chart }
+    - type: submenu
+      label: Links
+      icon: external
+      children:
+          - { type: link, label: Documentation, route: docs_index, icon: file, target: _blank }
+          - { type: link, label: Open the site, route: home, icon: external, target: _blank }
+
+dashboard:
+    widgets:
+        - { type: custom, widget: App\Admin\Widget\TodayWidget }
+        - { type: custom, widget: App\Admin\Widget\WeekWidget }
+        - { type: custom, widget: App\Admin\Widget\DocumentationWidget }
+        - type: links
+          label: Shortcuts
+          icon: link
+          size: small
+          links:
+              - { label: Analytics, route: admin_analytics, icon: chart }
+              - { label: Documentation, route: docs_index, icon: file, target: _blank }
+              - { label: Open the site, route: home, icon: external, target: _blank }
+        - { type: custom, widget: App\Admin\Widget\TrafficWidget }
+        - { type: custom, widget: App\Admin\Widget\TopPagesWidget }
+        - { type: custom, widget: App\Admin\Widget\NotFoundWidget }
+        - { type: custom, widget: App\Admin\Widget\ReleasesWidget }
+        - { type: custom, widget: App\Admin\Widget\ReferrersWidget }
+
+assets:
+    stylesheets: []
+    javascripts: []

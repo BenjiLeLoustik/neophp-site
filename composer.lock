@@ -4,8 +4,51 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e607db8bc8e6a5b7cead361e139f73e4",
+    "content-hash": "8c3f345be610e0dbb3caea12d4b850fe",
     "packages": [
+        {
+            "name": "neophp-package/neo-admin",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "../neo-package/neo-admin",
+                "reference": "6449f7db210ad0b9e624232df4e9246e18da1bf5"
+            },
+            "require": {
+                "neophp/framework": "^2.1",
+                "php": ">=8.2",
+                "twig/twig": "^3.0"
+            },
+            "type": "neophp-package",
+            "extra": {
+                "neophp": {
+                    "name": "admin",
+                    "modules": [
+                        "NeoPHP\\NeoAdmin\\NeoAdminManager"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "NeoPHP\\NeoAdmin\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Modular administration area for NeoPHP",
+            "keywords": [
+                "admin",
+                "crud",
+                "dashboard",
+                "neophp",
+                "neophp-package"
+            ],
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
         {
             "name": "neophp/framework",
             "version": "v2.1.0",
