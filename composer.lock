@@ -4,15 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8c3f345be610e0dbb3caea12d4b850fe",
+    "content-hash": "7788974f3cd2ab812ccb7eddd1ac345e",
     "packages": [
         {
             "name": "neophp-package/neo-admin",
-            "version": "1.0.0",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/NeoPHP-Framework/neo-package-admin.git",
+                "reference": "3ef21bd5033a16839e8b51b69042b78f0b4a41f1"
+            },
             "dist": {
-                "type": "path",
-                "url": "../neo-package/neo-admin",
-                "reference": "6449f7db210ad0b9e624232df4e9246e18da1bf5"
+                "type": "zip",
+                "url": "https://api.github.com/repos/NeoPHP-Framework/neo-package-admin/zipball/3ef21bd5033a16839e8b51b69042b78f0b4a41f1",
+                "reference": "3ef21bd5033a16839e8b51b69042b78f0b4a41f1",
+                "shasum": ""
             },
             "require": {
                 "neophp/framework": "^2.1",
@@ -33,6 +39,7 @@
                     "NeoPHP\\NeoAdmin\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -44,23 +51,24 @@
                 "neophp",
                 "neophp-package"
             ],
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/NeoPHP-Framework/neo-package-admin/issues",
+                "source": "https://github.com/NeoPHP-Framework/neo-package-admin/tree/v1.0.1"
+            },
+            "time": "2026-10-10T15:38:26+00:00"
         },
         {
             "name": "neophp/framework",
-            "version": "v2.1.0",
+            "version": "v2.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/NeoPHP-Framework/neophp.git",
-                "reference": "9a8f7a4b7558c6fc81cfbc5b42a5ed92f192eb78"
+                "reference": "f7630d6c0fb00fba4e5061755d775553c63d82bc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/NeoPHP-Framework/neophp/zipball/9a8f7a4b7558c6fc81cfbc5b42a5ed92f192eb78",
-                "reference": "9a8f7a4b7558c6fc81cfbc5b42a5ed92f192eb78",
+                "url": "https://api.github.com/repos/NeoPHP-Framework/neophp/zipball/f7630d6c0fb00fba4e5061755d775553c63d82bc",
+                "reference": "f7630d6c0fb00fba4e5061755d775553c63d82bc",
                 "shasum": ""
             },
             "require": {
@@ -131,9 +139,9 @@
             ],
             "support": {
                 "issues": "https://github.com/NeoPHP-Framework/neophp/issues",
-                "source": "https://github.com/NeoPHP-Framework/neophp/tree/v2.1.0"
+                "source": "https://github.com/NeoPHP-Framework/neophp/tree/v2.1.2"
             },
-            "time": "2026-10-10T05:36:31+00:00"
+            "time": "2026-10-10T10:22:28+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
