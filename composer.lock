@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "neophp/framework",
-            "version": "v2.0.0",
+            "version": "v2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/NeoPHP-Framework/neophp.git",
-                "reference": "3d0951eaf035a70a36f59b805fb3a6a90fd45286"
+                "reference": "9a8f7a4b7558c6fc81cfbc5b42a5ed92f192eb78"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/NeoPHP-Framework/neophp/zipball/3d0951eaf035a70a36f59b805fb3a6a90fd45286",
-                "reference": "3d0951eaf035a70a36f59b805fb3a6a90fd45286",
+                "url": "https://api.github.com/repos/NeoPHP-Framework/neophp/zipball/9a8f7a4b7558c6fc81cfbc5b42a5ed92f192eb78",
+                "reference": "9a8f7a4b7558c6fc81cfbc5b42a5ed92f192eb78",
                 "shasum": ""
             },
             "require": {
@@ -32,6 +32,7 @@
             },
             "require-dev": {
                 "phpstan/phpstan": "^2.2",
+                "phpunit/phpunit": "^11.5",
                 "twig/twig": "^3.0"
             },
             "suggest": {
@@ -87,9 +88,9 @@
             ],
             "support": {
                 "issues": "https://github.com/NeoPHP-Framework/neophp/issues",
-                "source": "https://github.com/NeoPHP-Framework/neophp/tree/v2.0.0"
+                "source": "https://github.com/NeoPHP-Framework/neophp/tree/v2.1.0"
             },
-            "time": "2026-10-09T13:26:10+00:00"
+            "time": "2026-10-10T05:36:31+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
