@@ -1,0 +1,9 @@
+{% import '_partials/icons.html.twig' as ui %}
+{% if extension.icon %}
+    <img src="{{ path('marketplace_media', {type: extension.folder, slug: extension.slug, file: extension.icon}) }}" alt="" loading="lazy"
+         class="{{ size }} shrink-0 rounded-xl border border-slate-200 bg-white object-cover">
+{% else %}
+    <span class="grid {{ size }} shrink-0 place-items-center rounded-xl {{ extension.type == 'theme' ? 'bg-violet-50 text-violet-600' : 'bg-brand-50 text-brand-600' }}">
+        {{ ui.icon(extension.type == 'theme' ? 'palette' : 'puzzle', 'size-1/2') }}
+    </span>
+{% endif %}

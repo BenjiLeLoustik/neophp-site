@@ -1,0 +1,140 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ extension.name }} · NeoIDE {{ extension.type }}{% endblock %}
+{% block description %}{{ extension.description ?: extension.name ~ ', a NeoIDE ' ~ extension.type ~ '.' }}{% endblock %}
+
+{% macro size(bytes) %}{% if bytes %}{{ bytes >= 1048576 ? (bytes / 1048576)|number_format(1) ~ ' MB' : (bytes / 1024)|number_format(0) ~ ' KB' }}{% endif %}{% endmacro %}
+
+{% block body %}
+    {% import '_partials/icons.html.twig' as ui %}
+    {% set latest = extension.latest %}
+
+    <section class="border-b border-slate-200 bg-slate-50">
+        <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+            <nav class="text-sm text-slate-500">
+                <a href="{{ path('marketplace_index') }}" class="hover:text-brand-600">Marketplace</a>
+                <span class="mx-1">/</span>
+                <a href="{{ path('marketplace_index', {type: extension.folder}) }}" class="hover:text-brand-600">{{ extension.folder|capitalize }}</a>
+            </nav>
+
+            <div class="mt-6 flex flex-col gap-6 md:flex-row md:items-center">
+                {% include 'marketplace/_icon.html.twig' with {extension: extension, size: 'size-20'} %}
+                <div class="min-w-0 flex-1">
+                    <h1 class="text-3xl font-extrabold tracking-tight break-words">{{ extension.name }}</h1>
+                    <p class="mt-1 text-slate-600">{{ extension.description }}</p>
+                    <p class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+                        <span>by <strong class="font-medium text-slate-700">{{ extension.author }}</strong></span>
+                        <span class="font-mono">{{ extension.id }}</span>
+                        <span class="inline-flex items-center gap-1">{{ ui.icon('download', 'size-4') }} {{ downloads }} download{{ downloads > 1 ? 's' }}</span>
+                    </p>
+                </div>
+                <div class="flex flex-col gap-2 sm:flex-row md:flex-col">
+                    <a href="neoide://install/{{ extension.id }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700">
+                        {{ ui.icon('monitor', 'size-4') }} Install in NeoIDE
+                    </a>
+                    <a href="{{ path('marketplace_download', {type: extension.folder, slug: extension.slug, version: latest.version}) }}" class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:border-brand-500 hover:text-brand-600">
+                        {{ ui.icon('download', 'size-4') }} Download v{{ latest.version }}
+                    </a>
+                </div>
+            </div>
+            {% if neoide %}
+                <p class="mt-4 text-sm text-slate-500 md:text-right">No NeoIDE yet? <a href="{{ path('neoide_index') }}" class="font-medium text-brand-600 hover:underline">Download NeoIDE</a></p>
+            {% endif %}
+        </div>
+    </section>
+
+    <div class="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-10 sm:px-6 lg:flex-row lg:px-8">
+        <article class="min-w-0 flex-1 space-y-10">
+            {% if extension.screenshots is not empty %}
+                <div class="flex snap-x gap-4 overflow-x-auto pb-2">
+                    {% for file in extension.screenshots %}
+                        {% set src = path('marketplace_media', {type: extension.folder, slug: extension.slug, file: file}) %}
+                        <a href="{{ src }}" target="_blank" class="shrink-0 snap-start">
+                            <img src="{{ src }}" alt="Screenshot {{ loop.index }} of {{ extension.name }}" loading="lazy" class="h-56 rounded-xl border border-slate-200 object-cover sm:h-72">
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="prose prose-slate max-w-none prose-a:text-brand-600 prose-code:before:content-none prose-code:after:content-none prose-pre:bg-slate-900">
+                {% if readme %}
+                    {{ readme|raw }}
+                {% else %}
+                    <p>{{ extension.description ?: 'No description.' }}</p>
+                {% endif %}
+            </div>
+
+            <section>
+                <h2 class="text-xl font-bold">Versions</h2>
+                <div class="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-xs tracking-wider text-slate-500 uppercase">
+                            <tr>
+                                <th class="px-4 py-3 font-semibold">Version</th>
+                                <th class="px-4 py-3 font-semibold">NeoIDE</th>
+                                <th class="px-4 py-3 font-semibold">Date</th>
+                                <th class="px-4 py-3 font-semibold">Changes</th>
+                                <th class="px-4 py-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for version in extension.versions %}
+                                <tr class="align-top">
+                                    <td class="px-4 py-3 font-mono whitespace-nowrap">{{ version.version }}</td>
+                                    <td class="px-4 py-3 font-mono whitespace-nowrap text-slate-600">{{ version.ide }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-slate-600">{{ version.date ?? '—' }}</td>
+                                    <td class="px-4 py-3 text-slate-600">{{ version.changelog ?? '' }}</td>
+                                    <td class="px-4 py-3 text-right whitespace-nowrap">
+                                        <a href="{{ path('marketplace_download', {type: extension.folder, slug: extension.slug, version: version.version}) }}" class="inline-flex items-center gap-1 font-medium text-brand-600 hover:underline">
+                                            {{ ui.icon('download', 'size-4') }} {{ _self.size(version.size) ?: '.zip' }}
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </article>
+
+        <aside class="w-full shrink-0 lg:w-72">
+            <dl class="sticky top-24 space-y-5 rounded-xl border border-slate-200 p-5 text-sm">
+                <div>
+                    <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Latest version</dt>
+                    <dd class="mt-1 font-mono">{{ latest.version }}{% if latest.date %} <span class="font-sans text-slate-500">· {{ latest.date }}</span>{% endif %}</dd>
+                </div>
+                <div>
+                    <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Compatible with</dt>
+                    <dd class="mt-1">NeoIDE <span class="font-mono">{{ latest.ide }}</span></dd>
+                </div>
+                {% if extension.license %}
+                    <div>
+                        <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">License</dt>
+                        <dd class="mt-1">{{ extension.license }}</dd>
+                    </div>
+                {% endif %}
+                <div>
+                    <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Links</dt>
+                    <dd class="mt-1 space-y-1">
+                        <a href="{{ source }}" rel="noopener" target="_blank" class="flex items-center gap-1.5 text-brand-600 hover:underline">{{ ui.icon('code', 'size-4') }} Source code</a>
+                        {% if extension.homepage %}<a href="{{ extension.homepage }}" rel="nofollow noopener" target="_blank" class="flex items-center gap-1.5 text-brand-600 hover:underline">{{ ui.icon('external', 'size-4') }} Website</a>{% endif %}
+                    </dd>
+                </div>
+                {% if extension.tags is not empty %}
+                    <div>
+                        <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Tags</dt>
+                        <dd class="mt-2 flex flex-wrap gap-1.5">
+                            {% for tag in extension.tags %}
+                                <a href="{{ path('marketplace_index', {q: tag}) }}" class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-600 hover:bg-brand-50 hover:text-brand-700">{{ tag }}</a>
+                            {% endfor %}
+                        </dd>
+                    </div>
+                {% endif %}
+                <div>
+                    <dt class="text-xs font-semibold tracking-wider text-slate-400 uppercase">SHA-256</dt>
+                    <dd class="mt-1 font-mono text-xs break-all text-slate-500">{{ latest.sha256 }}</dd>
+                </div>
+            </dl>
+        </aside>
+    </div>
+{% endblock %}

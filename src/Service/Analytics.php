@@ -12,12 +12,15 @@ class Analytics
 {
     public const TABLES = [
         'page_view' => 'CREATE TABLE IF NOT EXISTS page_view (id INTEGER PRIMARY KEY AUTOINCREMENT, path VARCHAR(255) NOT NULL, route VARCHAR(100) NULL, status INTEGER NOT NULL, visitor CHAR(64) NOT NULL, referrer VARCHAR(255) NULL, duration_ms INTEGER NOT NULL DEFAULT 0, created_at DATETIME NOT NULL)',
+        'download' => 'CREATE TABLE IF NOT EXISTS download (id INTEGER PRIMARY KEY AUTOINCREMENT, kind VARCHAR(10) NOT NULL, item VARCHAR(150) NOT NULL, version VARCHAR(50) NOT NULL, platform VARCHAR(30) NULL, source VARCHAR(10) NOT NULL, visitor CHAR(64) NOT NULL, created_at DATETIME NOT NULL)',
     ];
 
     public const INDEXES = [
         'CREATE INDEX IF NOT EXISTS idx_page_view_created ON page_view (created_at)',
         'CREATE INDEX IF NOT EXISTS idx_page_view_path ON page_view (path)',
         'CREATE INDEX IF NOT EXISTS idx_page_view_visitor ON page_view (visitor)',
+        'CREATE INDEX IF NOT EXISTS idx_download_item ON download (kind, item)',
+        'CREATE INDEX IF NOT EXISTS idx_download_created ON download (created_at)',
     ];
 
     public function __construct(
@@ -66,6 +69,48 @@ class Analytics
         ]);
 
         return (int) $this->connection->lastInsertId();
+    }
+
+    /**
+     * Records a download of NeoIDE (kind "ide") or of an extension (kind "plugin" / "theme").
+     */
+    public function recordDownload(string $kind, string $item, string $version, ?string $platform, string $source, ?string $ip, ?string $userAgent): void
+    {
+        $this->connection->insert('download', [
+            'kind' => $kind,
+            'item' => mb_substr($item, 0, 150),
+            'version' => mb_substr($version, 0, 50),
+            'platform' => $platform,
+            'source' => $source,
+            'visitor' => $this->visitor($ip, $userAgent),
+            'created_at' => new DateTimeImmutable(),
+        ]);
+    }
+
+    /**
+     * The total of unique downloads (one per visitor and per day) of every item of the kinds: [item => count].
+     */
+    public function downloadTotals(array $kinds): array
+    {
+        $rows = $this->connection->fetchAllAssociative(
+            'SELECT item, COUNT(DISTINCT visitor) AS downloads FROM download WHERE kind IN (?) GROUP BY item',
+            [$kinds],
+        );
+
+        return array_column(array_map(static fn (array $row): array => [$row['item'], (int) $row['downloads']], $rows), 1, 0);
+    }
+
+    public function topDownloads(int $days, int $limit = 10, ?string $kind = null): array
+    {
+        $sql = 'SELECT kind, item, COUNT(*) AS downloads, COUNT(DISTINCT visitor) AS visitors FROM download WHERE created_at >= :since';
+        $parameters = ['since' => $this->since($days)];
+
+        if ($kind !== null) {
+            $sql .= ' AND kind = :kind';
+            $parameters['kind'] = $kind;
+        }
+
+        return $this->connection->fetchAllAssociative($sql . ' GROUP BY kind, item ORDER BY downloads DESC, item ASC LIMIT ' . max(1, $limit), $parameters);
     }
 
     public function summary(int $days): array
@@ -134,7 +179,10 @@ class Analytics
 
     public function purge(int $olderThanDays): int
     {
-        return $this->connection->executeStatement('DELETE FROM page_view WHERE created_at < ?', [new DateTimeImmutable('-' . $olderThanDays . ' days')]);
+        $before = new DateTimeImmutable('-' . $olderThanDays . ' days');
+
+        return $this->connection->executeStatement('DELETE FROM page_view WHERE created_at < ?', [$before])
+            + $this->connection->executeStatement('DELETE FROM download WHERE created_at < ?', [$before]);
     }
 
     protected function visitor(?string $ip, ?string $userAgent): string

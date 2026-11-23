@@ -13,7 +13,7 @@ use Throwable;
 #[AsListener]
 class PageViewListener
 {
-    public const IGNORED = ['#^/(analytics|login|logout|builds|_debug)(/|$)#', '#\.(ico|txt|xml|css|js|map|png|jpg|svg|webp)$#'];
+    public const IGNORED = ['#^/(analytics|admin|api|login|logout|builds|_debug)(/|$)#', '#/download(/|$)#', '#\.(ico|txt|xml|css|js|map|png|jpg|svg|webp)$#'];
 
     public const BOTS = '#bot|crawl|spider|slurp|curl|wget|python|headless|lighthouse#i';
 

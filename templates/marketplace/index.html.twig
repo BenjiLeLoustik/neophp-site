@@ -1,0 +1,137 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}NeoIDE Marketplace{% endblock %}
+{% block description %}Plugins and themes for NeoIDE, the IDE of the NeoPHP framework.{% endblock %}
+
+{% set tabs = {'': 'All', plugin: 'Plugins', theme: 'Themes'} %}
+
+{% block body %}
+    {% import '_partials/icons.html.twig' as ui %}
+
+    <section class="border-b border-slate-200 bg-slate-50">
+        <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+            <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <p class="text-sm font-semibold text-brand-600">NeoIDE · Marketplace</p>
+                    <h1 class="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">Make NeoIDE yours</h1>
+                    <p class="mt-3 max-w-2xl text-slate-600">Plugins and themes reviewed by the NeoPHP team. Install them in one click from NeoIDE, or from this page.</p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{{ path('neoide_index') }}" class="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700">
+                        {{ ui.icon('download', 'size-4') }} Get NeoIDE
+                    </a>
+                </div>
+            </div>
+
+            <div class="relative mt-8 max-w-2xl">
+                <svg class="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-slate-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.45 4.39l3.08 3.08a.75.75 0 1 1-1.06 1.06l-3.08-3.08A7 7 0 0 1 2 9Z" clip-rule="evenodd"/>
+                </svg>
+                <input type="search" id="market-search" placeholder="Search a plugin, a theme, a tag..." autocomplete="off"
+                       class="w-full rounded-xl border border-slate-300 bg-white py-3.5 pr-16 pl-12 text-base shadow-sm focus:border-brand-500 focus:ring-4 focus:ring-brand-100 focus:outline-none">
+                <kbd class="pointer-events-none absolute top-1/2 right-4 hidden -translate-y-1/2 rounded border border-slate-300 px-1.5 py-0.5 font-mono text-xs text-slate-400 sm:block">/</kbd>
+            </div>
+
+            <div class="mt-6 flex flex-wrap items-center gap-2" role="tablist">
+                {% for key, label in tabs %}
+                    <button type="button" role="tab" data-tab="{{ key }}" aria-selected="{{ (type ?? '') == key ? 'true' : 'false' }}"
+                            class="rounded-full border border-slate-300 bg-white px-4 py-1.5 text-sm font-medium text-slate-600 hover:border-brand-500 aria-selected:border-brand-600 aria-selected:bg-brand-600 aria-selected:text-white">
+                        {{ label }}
+                        <span class="ml-1 opacity-70">{{ key == '' ? extensions|length : extensions|filter(e => e.type == key)|length }}</span>
+                    </button>
+                {% endfor %}
+                <p id="market-count" class="ml-auto text-sm text-slate-500"></p>
+            </div>
+        </div>
+    </section>
+
+    <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        {% if extensions is empty %}
+            <div class="rounded-2xl border border-dashed border-slate-300 px-6 py-16 text-center">
+                <p class="text-lg font-semibold">{{ synchronized ? 'No extension published yet' : 'The marketplace is not synchronized yet' }}</p>
+                <p class="mt-1 text-sm text-slate-500">Plugins and themes are coming soon.</p>
+            </div>
+        {% else %}
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {% for extension in extensions %}
+                    {% include 'marketplace/_card.html.twig' %}
+                {% endfor %}
+            </div>
+
+            <div id="market-empty" class="hidden rounded-2xl border border-dashed border-slate-300 px-6 py-16 text-center">
+                <p class="text-lg font-semibold">No extension found</p>
+                <p class="mt-1 text-sm text-slate-500">Try another word.</p>
+            </div>
+        {% endif %}
+
+        <section class="mt-16 grid gap-6 rounded-2xl bg-slate-900 p-8 text-white sm:grid-cols-3">
+            {% for item in [
+                {icon: 'shield', title: 'Reviewed', text: 'Every extension is reviewed by the NeoPHP team before it is listed.'},
+                {icon: 'code', title: 'Open source', text: 'The manifests are public, and the SHA-256 of every package is checked by NeoIDE before the install.'},
+                {icon: 'zap', title: 'One click', text: 'The "Install" buttons open NeoIDE, which downloads the version compatible with yours.'},
+            ] %}
+                <div>
+                    <span class="grid size-10 place-items-center rounded-lg bg-white/10 text-brand-100">{{ ui.icon(item.icon, 'size-5') }}</span>
+                    <h2 class="mt-4 font-semibold">{{ item.title }}</h2>
+                    <p class="mt-1 text-sm text-slate-300">{{ item.text }}</p>
+                </div>
+            {% endfor %}
+        </section>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        (() => {
+            const input = document.getElementById('market-search');
+            const count = document.getElementById('market-count');
+            const empty = document.getElementById('market-empty');
+            const tabs = [...document.querySelectorAll('[data-tab]')];
+            const normalize = (text) => text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+            const cards = [...document.querySelectorAll('[data-card]')].map((element) => ({element, type: element.dataset.type, search: normalize(element.dataset.search)}));
+            const folders = {plugin: 'plugins', theme: 'themes'};
+            let type = tabs.find((tab) => tab.getAttribute('aria-selected') === 'true')?.dataset.tab ?? '';
+
+            const update = () => {
+                const terms = normalize(input.value.trim()).split(/\s+/).filter(Boolean);
+                let total = 0;
+
+                for (const card of cards) {
+                    const visible = (type === '' || card.type === type) && terms.every((term) => card.search.includes(term));
+                    card.element.classList.toggle('hidden', !visible);
+                    total += visible ? 1 : 0;
+                }
+
+                tabs.forEach((tab) => tab.setAttribute('aria-selected', String(tab.dataset.tab === type)));
+                empty?.classList.toggle('hidden', total > 0 || cards.length === 0);
+                count.textContent = terms.length ? `${total} result${total > 1 ? 's' : ''}` : '';
+
+                const url = new URL(window.location);
+                terms.length ? url.searchParams.set('q', input.value.trim()) : url.searchParams.delete('q');
+                type ? url.searchParams.set('type', folders[type]) : url.searchParams.delete('type');
+                history.replaceState(null, '', url);
+            };
+
+            tabs.forEach((tab) => tab.addEventListener('click', () => {
+                type = tab.dataset.tab;
+                update();
+            }));
+            input.addEventListener('input', update);
+            input.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    input.value = '';
+                    update();
+                }
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === '/' && document.activeElement !== input) {
+                    event.preventDefault();
+                    input.focus();
+                }
+            });
+
+            input.value = new URLSearchParams(window.location.search).get('q') ?? '';
+            update();
+        })();
+    </script>
+{% endblock %}

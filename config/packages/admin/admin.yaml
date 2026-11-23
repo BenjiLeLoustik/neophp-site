@@ -11,11 +11,14 @@ menu:
       icon: chart
       children:
           - { type: link, label: Analytics, route: admin_analytics, icon: chart }
+          - { type: link, label: Downloads, route: admin_downloads, icon: box }
     - type: submenu
       label: Links
       icon: external
       children:
           - { type: link, label: Documentation, route: docs_index, icon: file, target: _blank }
+          - { type: link, label: NeoIDE, route: neoide_index, icon: external, target: _blank }
+          - { type: link, label: Marketplace, route: marketplace_index, icon: external, target: _blank }
           - { type: link, label: Open the site, route: home, icon: external, target: _blank }
 
 dashboard:
@@ -36,6 +39,7 @@ dashboard:
         - { type: custom, widget: App\Admin\Widget\NotFoundWidget }
         - { type: custom, widget: App\Admin\Widget\ReleasesWidget }
         - { type: custom, widget: App\Admin\Widget\ReferrersWidget }
+        - { type: custom, widget: App\Admin\Widget\DownloadsWidget }
 
 assets:
     stylesheets: []
