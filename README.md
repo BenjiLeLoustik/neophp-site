@@ -54,7 +54,7 @@ php bin/neo serve
 | Guide | `/docs/{version}` |
 | Feature documentation | `/docs/{version}/{group}/{slug}` |
 | NeoIDE download page | `/neoide` |
-| NeoIDE download (counted, redirects to the `.exe` of the latest GitHub release) | `/neoide/download` |
+| NeoIDE download (counted, redirects to the file of the latest GitHub release) | `/neoide/download` |
 | Marketplace of NeoIDE plugins and themes | `/marketplace` |
 | Extension page (`plugin-xml-inspector` => `/marketplace/plugins/xml-inspector`) | `/marketplace/{plugins\|themes}/{name}` |
 | Extension download (counted, .zip) | `/marketplace/{plugins\|themes}/{name}/download/{version\|latest}` |
@@ -79,7 +79,7 @@ Framework branches:
 
 ## NeoIDE and marketplace
 
-**NeoIDE** is downloaded from the latest release of [NeoPHP-Framework/neo-ide](https://github.com/NeoPHP-Framework/neo-ide) (`NEOIDE_REPOSITORY`): the `.exe` attached to it (`neoide.exe` first). No release, or no `.exe` in it = NeoIDE is not available. `marketplace:sync` reads the GitHub API and stores the release in `var/marketplace/neoide.json`; when GitHub does not answer, the last known release is kept.
+**NeoIDE** is downloaded from the latest release of [NeoPHP-Framework/neo-ide](https://github.com/NeoPHP-Framework/neo-ide) (`NEOIDE_REPOSITORY`): the file attached to it: `neoide.exe`, otherwise an installer (`.exe`, `.msi`), otherwise a `.zip` (`NeoIDE-win-x64.zip`). No release, or no such file in it = NeoIDE is not available. `marketplace:sync` reads the GitHub API and stores the release in `var/marketplace/neoide.json`; when GitHub does not answer, the last known release is kept.
 
 **The marketplace** is [NeoPHP-Framework/neo-ide-marketplace](https://github.com/NeoPHP-Framework/neo-ide-marketplace) (`MARKETPLACE_REPOSITORY`). Every folder at its root named `plugin-<name>` is a plugin, `theme-<name>` a theme (lowercase letters, digits and dashes; `<name>` is the URL of its page). The folder holds the extension in the native format of NeoIDE (see `EXTENSIONS.md` and `MARKETPLACE.md` of the IDE):
 

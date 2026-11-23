@@ -24,7 +24,7 @@
                         {{ ui.icon('download', 'size-5') }} Download for Windows
                     </a>
                     <p class="text-sm text-slate-500">
-                        Version <span class="font-mono">{{ release.version }}</span>
+                        Version <span class="font-mono">{{ release.version }}</span> · {{ release.file }}
                         {% if release.date %} · {{ release.date }}{% endif %}
                         {% if release.size %} · {{ (release.size / 1048576)|number_format(1) }} MB{% endif %}
                         · <a href="{{ releasesUrl }}" target="_blank" rel="noopener" class="font-medium text-brand-600 hover:underline">All releases</a>

@@ -12,7 +12,7 @@ use Throwable;
 
 /**
  * The latest release of NeoIDE on GitHub (NEOIDE_REPOSITORY), refreshed by "marketplace:sync" into var/marketplace/neoide.json.
- * No release (or no .exe in it) = NeoIDE is not available.
+ * No release (or no .exe / .msi / .zip in it) = NeoIDE is not available.
  */
 class NeoIde
 {
@@ -79,7 +79,7 @@ class NeoIde
         }
 
         $release = is_array($data) ? $this->normalize($data) : null;
-        $error = is_array($data) && $release === null ? sprintf('the release %s has no .exe file.', (string) ($data['tag_name'] ?? '')) : null;
+        $error = is_array($data) && $release === null ? sprintf('the release %s has no .exe, .msi or .zip file.', (string) ($data['tag_name'] ?? '')) : null;
 
         is_dir(dirname($this->file)) || mkdir(dirname($this->file), 0775, true);
         file_put_contents($this->file, json_encode(['checked_at' => (new DateTimeImmutable())->format(DATE_ATOM), 'release' => $release], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
@@ -90,8 +90,20 @@ class NeoIde
 
     protected function normalize(array $data): ?array
     {
-        $assets = array_values(array_filter(is_array($data['assets'] ?? null) ? $data['assets'] : [], static fn (mixed $asset): bool => is_array($asset) && str_ends_with(strtolower((string) ($asset['name'] ?? '')), '.exe')));
-        usort($assets, static fn (array $a, array $b): int => (strtolower($b['name']) === 'neoide.exe') <=> (strtolower($a['name']) === 'neoide.exe'));
+        // The Windows download: neoide.exe, then an installer (.exe, .msi), then an archive (.zip, "win" in its name first)
+        $score = static function (mixed $asset): int {
+            $name = is_array($asset) ? strtolower((string) ($asset['name'] ?? '')) : '';
+
+            return match (true) {
+                $name === 'neoide.exe' => 5,
+                str_ends_with($name, '.exe') || str_ends_with($name, '.msi') => 4,
+                str_ends_with($name, '.zip') && str_contains($name, 'win') => 3,
+                str_ends_with($name, '.zip') => 2,
+                default => 0,
+            };
+        };
+        $assets = array_values(array_filter(is_array($data['assets'] ?? null) ? $data['assets'] : [], static fn (mixed $asset): bool => $score($asset) > 0));
+        usort($assets, static fn (array $a, array $b): int => $score($b) <=> $score($a));
         $asset = $assets[0] ?? null;
 
         if ($asset === null || !is_string($asset['browser_download_url'] ?? null)) {
