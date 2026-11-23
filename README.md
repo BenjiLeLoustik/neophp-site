@@ -56,7 +56,7 @@ php bin/neo serve
 | NeoIDE download page | `/neoide` |
 | NeoIDE download (counted, redirects to the `.exe` of the latest GitHub release) | `/neoide/download` |
 | Marketplace of NeoIDE plugins and themes | `/marketplace` |
-| Extension page (`plugin-git-tools` => `/marketplace/plugins/git-tools`) | `/marketplace/{plugins\|themes}/{name}` |
+| Extension page (`plugin-xml-inspector` => `/marketplace/plugins/xml-inspector`) | `/marketplace/{plugins\|themes}/{name}` |
 | Extension download (counted, .zip) | `/marketplace/{plugins\|themes}/{name}/download/{version\|latest}` |
 | API read by NeoIDE | `/api/v1/...` |
 | Analytics dashboard (admin) | `/analytics` |
@@ -81,42 +81,33 @@ Framework branches:
 
 **NeoIDE** is downloaded from the latest release of [NeoPHP-Framework/neo-ide](https://github.com/NeoPHP-Framework/neo-ide) (`NEOIDE_REPOSITORY`): the `.exe` attached to it (`neoide.exe` first). No release, or no `.exe` in it = NeoIDE is not available. `marketplace:sync` reads the GitHub API and stores the release in `var/marketplace/neoide.json`; when GitHub does not answer, the last known release is kept.
 
-**The marketplace** is [NeoPHP-Framework/neo-ide-marketplace](https://github.com/NeoPHP-Framework/neo-ide-marketplace) (`MARKETPLACE_REPOSITORY`). Every folder at its root named `plugin-<name>` is a plugin, `theme-<name>` a theme (lowercase letters, digits and dashes); the folder name is the id of the extension.
+**The marketplace** is [NeoPHP-Framework/neo-ide-marketplace](https://github.com/NeoPHP-Framework/neo-ide-marketplace) (`MARKETPLACE_REPOSITORY`). Every folder at its root named `plugin-<name>` is a plugin, `theme-<name>` a theme (lowercase letters, digits and dashes; `<name>` is the URL of its page). The folder holds the extension in the native format of NeoIDE (see `EXTENSIONS.md` and `MARKETPLACE.md` of the IDE):
 
 ```
-plugin-git-tools/
-├── manifest.json     required
-├── README.md         optional: the page of the extension (raw HTML escaped)
-├── icon.png          optional, square
-├── screenshots/      optional: .png / .jpg / .webp
-└── ...               the files of the plugin, packaged as they are
+plugin-xml-inspector/
+├── plugin.json       Id, Name, Version, Description, EntryAssembly, EntryType, ApiVersion (+ Author, SourceUrl, WebsiteUrl, Screenshots)
+├── XmlInspector.dll  the DLL and its dependencies
+├── README.md         site only: the page of the extension (raw HTML escaped)
+├── icon.png          site only, square
+└── screenshots/      site only: .png / .jpg / .webp
+theme-ocean/
+├── theme.json        Id, Name, Version, the palette (+ Author, Description, SourceUrl, Screenshots)
+└── README.md, icon.png, screenshots/
 ```
 
-```json
-{
-    "version": "1.0.0",
-    "name": "Git Tools",
-    "description": "One sentence shown in the catalog.",
-    "author": "NeoPHP",
-    "tags": ["git"],
-    "license": "MIT",
-    "homepage": "https://...",
-    "ide": ">=0.4 <1.0",
-    "changelog": "What changed in this version."
-}
-```
+- `Id` must look like `publisher.name` (`neophp.xml-inspector`): it is the id of the API and of the `neoide://install/{Id}` links, and NeoIDE refuses a package whose `Id` / `Version` differ from the catalog.
+- `Version` is required (semantic version); to publish a change of the packaged files, increase it (the command warns otherwise; editing `README.md`, the icon or the screenshots needs no new version).
+- Optional keys read by the site only (ignored by NeoIDE): `Tags`, `License`, `Ide` (NeoIDE versions supported, `*` by default: `0.4.2`, `>=0.4 <1.0`, `>=0.4 <0.6 || >=1.0`), `Changelog`.
 
-Only `version` is required (semantic version). `name` defaults to the folder name, `author` to NeoPHP, `ide` (NeoIDE versions supported) to `*`: `0.4.2`, `>=0.4 <1.0`, `>=0.4 <0.6 || >=1.0`.
+`php bin/neo marketplace:sync` mirrors the repository into `var/marketplace/`, exports the `plugin-*` / `theme-*` folders into `var/marketplace/current/` and, for every new `Version`, builds `var/marketplace/packages/<folder>/<version>.zip` with its SHA-256: the files of the folder at the root of the zip, without `README.md`, the icon and `screenshots/`. The previous versions stay downloadable.
 
-`php bin/neo marketplace:sync` mirrors the repository into `var/marketplace/`, exports its `plugin-*` / `theme-*` folders into `var/marketplace/current/` and, for every new `version`, builds the `.zip` of the folder in `var/marketplace/packages/<folder>/<version>.zip` with its SHA-256: the previous versions stay downloadable. To publish a change, increase `version` (the command warns when the content changed without a new version).
-
-API for NeoIDE (JSON, `ETag` + `Cache-Control: max-age=300`, errors in `application/problem+json`; NeoIDE should send `User-Agent: NeoIDE/x.y.z` so its downloads are counted as `ide`):
+API for NeoIDE, the contract read by `NeoIDE/Marketplace/MarketplaceIdentity.cs` (JSON, `ETag` + `Cache-Control: max-age=300`, errors in `application/problem+json`; NeoIDE should send `User-Agent: NeoIDE/x.y.z` so its downloads are counted as `ide`):
 
 | Method | Route | |
 |---|---|---|
 | GET | `/api/v1/extensions?type=plugin\|theme&q=&ide=0.4.0` | Catalog; with `ide`, only the extensions with a compatible version, `latest` being the latest compatible one |
-| GET | `/api/v1/extensions/{id}` | One extension (`plugin-git-tools`) with every version |
-| POST | `/api/v1/updates` | Body `{"ide": "0.4.0", "installed": {"plugin-git-tools": "1.1.0"}}`: the NeoIDE release when newer than `ide`, and the extension updates |
+| GET | `/api/v1/extensions/{id}` | One extension (`neophp.xml-inspector`) with every version |
+| POST | `/api/v1/updates` | Body `{"ide": "0.4.0", "installed": {"neophp.xml-inspector": "1.1.0"}}`: the NeoIDE release when newer than `ide`, and the extension updates |
 | GET | `/api/v1/neoide` | The latest NeoIDE release: `version`, `date`, `notes`, `url`, `size`, `sha256` |
 
 The "Install in NeoIDE" button opens `neoide://install/{id}`: NeoIDE registers this URL scheme at install time, then reads `/api/v1/extensions/{id}`, downloads the compatible version and checks its SHA-256 (also sent in the `X-Checksum-Sha256` header of the download).

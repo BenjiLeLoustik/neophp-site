@@ -51,7 +51,7 @@ class MarketplaceController extends AbstractController
             'readme' => $this->marketplace->getReadme($extension),
             'downloads' => $this->downloads()[$extension['id']] ?? 0,
             'neoide' => $neoIde->isAvailable(),
-            'source' => sprintf('%s/tree/HEAD/%s', preg_replace('/\.git$/', '', $this->repository), $extension['id']),
+            'source' => $extension['repository'] ?? sprintf('%s/tree/HEAD/%s', preg_replace('/\.git$/', '', $this->repository), $extension['directory']),
         ]);
     }
 

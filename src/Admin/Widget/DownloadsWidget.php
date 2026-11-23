@@ -32,7 +32,7 @@ class DownloadsWidget implements WidgetInterface
         foreach ($rows as $row) {
             $url = $row['kind'] === 'ide'
                 ? $this->routing->generate('neoide_index')
-                : $this->routing->generate('marketplace_show', ['type' => $row['kind'] . 's', 'slug' => (string) preg_replace('/^(plugin|theme)-/', '', (string) $row['item'])]);
+                : $this->routing->generate('marketplace_index', ['q' => $row['item']]);
             $links[] = ['label' => $row['kind'] === 'ide' ? 'NeoIDE' : (string) $row['item'], 'url' => $url, 'meta' => (int) $row['downloads'], 'target' => '_blank'];
         }
 

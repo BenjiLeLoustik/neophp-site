@@ -23,7 +23,7 @@
                     <h1 class="text-3xl font-extrabold tracking-tight break-words">{{ extension.name }}</h1>
                     <p class="mt-1 text-slate-600">{{ extension.description }}</p>
                     <p class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
-                        <span>by <strong class="font-medium text-slate-700">{{ extension.author }}</strong></span>
+                        <span>by <strong class="font-medium text-slate-700">{{ extension.publisher }}</strong></span>
                         <span class="font-mono">{{ extension.id }}</span>
                         <span class="inline-flex items-center gap-1">{{ ui.icon('download', 'size-4') }} {{ downloads }} download{{ downloads > 1 ? 's' }}</span>
                     </p>
@@ -45,10 +45,10 @@
 
     <div class="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-10 sm:px-6 lg:flex-row lg:px-8">
         <article class="min-w-0 flex-1 space-y-10">
-            {% if extension.screenshots is not empty %}
+            {% set shots = extension.screenshots|map(file => path('marketplace_media', {type: extension.folder, slug: extension.slug, file: file}))|merge(extension.screenshot_urls) %}
+            {% if shots is not empty %}
                 <div class="flex snap-x gap-4 overflow-x-auto pb-2">
-                    {% for file in extension.screenshots %}
-                        {% set src = path('marketplace_media', {type: extension.folder, slug: extension.slug, file: file}) %}
+                    {% for src in shots %}
                         <a href="{{ src }}" target="_blank" class="shrink-0 snap-start">
                             <img src="{{ src }}" alt="Screenshot {{ loop.index }} of {{ extension.name }}" loading="lazy" class="h-56 rounded-xl border border-slate-200 object-cover sm:h-72">
                         </a>

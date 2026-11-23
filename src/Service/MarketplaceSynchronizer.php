@@ -10,8 +10,9 @@ use NeoPHP\Component\Container\Attribute\Autowire;
 
 /**
  * Mirrors the marketplace repository (MARKETPLACE_REPOSITORY): every plugin-* / theme-* folder of its default branch
- * is exported into var/marketplace/current/, and each new "version" of its manifest.json is packaged into
- * var/marketplace/packages/<folder>/<version>.zip (+ <version>.json: sha256, size, date...).
+ * is exported into var/marketplace/current/, and each new "Version" of its plugin.json / theme.json is packaged into
+ * var/marketplace/packages/<folder>/<version>.zip (+ <version>.json: sha256, size, date...), in the format installed
+ * by NeoIDE: the files of the folder at the root of the zip, without the files of the site (README.md, icon, screenshots/).
  */
 class MarketplaceSynchronizer
 {
@@ -74,14 +75,23 @@ class MarketplaceSynchronizer
      */
     protected function package(string $mirror, string $folder, string $directory): bool|string
     {
-        $manifest = json_decode((string) @file_get_contents($directory . '/manifest.json'), true);
-        $version = is_array($manifest) ? ($manifest['version'] ?? null) : null;
+        $type = str_starts_with($folder, 'theme-') ? 'theme' : 'plugin';
+        $manifest = Marketplace::readManifest($directory, $type);
+        $version = $manifest['version'] ?? null;
 
-        if (!is_string($version) || preg_match(Marketplace::VERSION_PATTERN, $version) !== 1) {
-            return null === $manifest ? 'manifest.json is missing or is not valid JSON.' : '"version" of manifest.json must be a semantic version (1.2.0, 1.3.0-beta.1).';
+        if ($manifest === null) {
+            return Marketplace::MANIFESTS[$type] . ' is missing or is not valid JSON.';
         }
 
-        $tree = $this->git(sprintf('--git-dir=%s rev-parse %s', escapeshellarg($mirror), escapeshellarg('HEAD:' . $folder)));
+        if (!is_string($version) || preg_match(Marketplace::VERSION_PATTERN, $version) !== 1) {
+            return sprintf('"Version" of %s must be a semantic version (1.2.0, 1.3.0-beta.1).', Marketplace::MANIFESTS[$type]);
+        }
+
+        // Fingerprint of the packaged files only: editing the README, the icon or the screenshots needs no new version
+        $tree = hash('sha256', implode("\n", array_filter(
+            explode("\n", $this->git(sprintf('--git-dir=%s ls-tree -r %s', escapeshellarg($mirror), escapeshellarg('HEAD:' . $folder)))),
+            static fn (string $line): bool => !in_array(explode('/', explode("\t", $line, 2)[1] ?? '')[0], Marketplace::SITE_FILES, true),
+        )));
         $packages = $this->path . '/packages/' . $folder;
         $zip = $packages . '/' . $version . '.zip';
 
@@ -89,7 +99,7 @@ class MarketplaceSynchronizer
             $metadata = json_decode((string) file_get_contents($packages . '/' . $version . '.json'), true);
 
             return is_array($metadata) && ($metadata['tree'] ?? null) !== $tree
-                ? sprintf('the content changed but the version is still %s: increase "version" to publish it.', $version)
+                ? sprintf('the content changed but the version is still %s: increase "Version" to publish it.', $version)
                 : false;
         }
 
@@ -97,7 +107,13 @@ class MarketplaceSynchronizer
             mkdir($packages, 0775, true);
         }
 
-        $this->run(sprintf('git --git-dir=%s archive --format=zip -o %s %s', escapeshellarg($mirror), escapeshellarg($zip . '.tmp'), escapeshellarg('HEAD:' . $folder)));
+        $this->run(sprintf(
+            'git --git-dir=%s archive --format=zip -o %s %s -- . %s',
+            escapeshellarg($mirror),
+            escapeshellarg($zip . '.tmp'),
+            escapeshellarg('HEAD:' . $folder),
+            implode(' ', array_map(static fn (string $file): string => escapeshellarg(':(exclude)' . $file), Marketplace::SITE_FILES)),
+        ));
         rename($zip . '.tmp', $zip);
 
         file_put_contents($packages . '/' . $version . '.json', json_encode([

@@ -22,7 +22,7 @@ class SyncCommand extends AbstractConsole
 
     protected function configure(InputInterface $input, OutputInterface $output): void
     {
-        $this->setHelp('Clones the marketplace repository (MARKETPLACE_REPOSITORY), packages every new version of its plugin-* and theme-* folders, then reads the latest release of NEOIDE_REPOSITORY on GitHub.');
+        $this->setHelp('Clones the marketplace repository (MARKETPLACE_REPOSITORY), packages every new Version of its plugin-* (plugin.json) and theme-* (theme.json) folders, then reads the latest release of NEOIDE_REPOSITORY on GitHub.');
         $this->addExample('marketplace:sync');
     }
 
@@ -35,7 +35,7 @@ class SyncCommand extends AbstractConsole
             $output->writeln(sprintf('  marketplace  %s  %s', $result['commit'] ?? '-', $result['updated'] ? '<success>updated</success>' : '<muted>up to date</muted>'));
 
             foreach ($result['packaged'] as $folder) {
-                $output->writeln(sprintf('  <success>packaged</success>  %s %s', $folder, $this->marketplace->find($folder)['latest']['version'] ?? ''));
+                $output->writeln(sprintf('  <success>packaged</success>  %s', $folder));
             }
 
             $output->writeln(sprintf('  %d plugin(s), %d theme(s)', count($this->marketplace->all('plugin')), count($this->marketplace->all('theme'))));

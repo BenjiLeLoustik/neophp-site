@@ -10,9 +10,10 @@ use NeoPHP\Package\Markdown\MarkdownManagerInterface;
 /**
  * Reads the NeoIDE plugins and themes exported by "marketplace:sync".
  *
- * Every folder of the marketplace repository named plugin-<name> is a plugin, theme-<name> a theme:
- * manifest.json (required: "version"), README.md, icon.png and screenshots/ are optional.
- * The packages (.zip of the folder, one per version) are in var/marketplace/packages/<folder>/.
+ * Every folder of the marketplace repository named plugin-<name> is a plugin, theme-<name> a theme, in the native
+ * format of NeoIDE: plugin.json + DLL and dependencies, or theme.json. README.md, icon.png and screenshots/ are
+ * only used by the site (never packaged). The packages (.zip of the folder, one per version) are in
+ * var/marketplace/packages/<folder>/.
  */
 class Marketplace
 {
@@ -21,8 +22,14 @@ class Marketplace
 
     public const FOLDER_PATTERN = '/^(plugin|theme)-([a-z0-9][a-z0-9-]*)$/';
 
-    /** The id of an extension is its folder: plugin-git-tools, theme-midnight */
-    public const ID_PATTERN = '(?:plugin|theme)-[a-z0-9][a-z0-9-]*';
+    /** The "Id" of plugin.json / theme.json: publisher.name, as accepted by the neoide://install/ links of NeoIDE */
+    public const ID_PATTERN = '[a-z0-9][a-z0-9-]*\.[a-z0-9][a-z0-9-]*';
+
+    /** The manifest of NeoIDE in each folder */
+    public const MANIFESTS = ['plugin' => 'plugin.json', 'theme' => 'theme.json'];
+
+    /** The files of a folder used by the site only, excluded from the package */
+    public const SITE_FILES = ['README.md', 'icon.png', 'icon.webp', 'icon.jpg', 'screenshots'];
 
     public const SLUG_PATTERN = '[a-z0-9][a-z0-9-]*';
 
@@ -73,7 +80,25 @@ class Marketplace
 
     public function findBySlug(string $type, string $slug): ?array
     {
-        return $this->find($type . '-' . $slug);
+        foreach ($this->load() as $extension) {
+            if ($extension['type'] === $type && $extension['slug'] === $slug) {
+                return $extension;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The plugin.json / theme.json of a folder, keys in lowercase (NeoIDE reads them case-insensitively).
+     */
+    public static function readManifest(string $directory, string $type): ?array
+    {
+        $file = $directory . '/' . self::MANIFESTS[$type];
+        $content = is_file($file) ? (string) file_get_contents($file) : '';
+        $manifest = json_decode((string) preg_replace('/^\xEF\xBB\xBF/', '', $content), true);
+
+        return is_array($manifest) ? array_change_key_case($manifest, CASE_LOWER) : null;
     }
 
     /**
@@ -85,7 +110,7 @@ class Marketplace
         $result = [];
 
         foreach ($this->all($type) as $extension) {
-            $haystack = mb_strtolower(implode(' ', [$extension['id'], $extension['name'], $extension['author'], $extension['description'], ...$extension['tags']]));
+            $haystack = mb_strtolower(implode(' ', [$extension['id'], $extension['name'], $extension['publisher'], $extension['description'], ...$extension['tags']]));
 
             foreach ($terms as $term) {
                 if (!str_contains($haystack, $term)) {
@@ -137,7 +162,7 @@ class Marketplace
      */
     public function getPackagePath(array $extension, array $version): ?string
     {
-        $file = sprintf('%s/packages/%s/%s.zip', $this->path, $extension['id'], $version['version']);
+        $file = sprintf('%s/packages/%s/%s.zip', $this->path, $extension['directory'], $version['version']);
 
         return is_file($file) ? $file : null;
     }
@@ -220,9 +245,17 @@ class Marketplace
 
             $extension = $this->normalize($match[1], $match[2], $directory);
 
-            if ($extension !== null) {
-                $extensions[$extension['id']] = $extension;
+            if ($extension === null) {
+                continue;
             }
+
+            if (isset($extensions[$extension['id']])) {
+                $this->errors[] = sprintf('%s: the Id "%s" is already used by %s.', $extension['directory'], $extension['id'], $extensions[$extension['id']]['directory']);
+
+                continue;
+            }
+
+            $extensions[$extension['id']] = $extension;
         }
 
         uasort($extensions, static fn (array $a, array $b): int => strnatcasecmp($a['name'], $b['name']));
@@ -232,27 +265,37 @@ class Marketplace
 
     protected function normalize(string $type, string $slug, string $directory): ?array
     {
-        $id = basename($directory);
-        $manifest = json_decode((string) @file_get_contents($directory . '/manifest.json'), true);
+        $folder = basename($directory);
+        $manifest = self::readManifest($directory, $type);
+        $file = self::MANIFESTS[$type];
 
-        if (!is_array($manifest)) {
-            $this->errors[] = $id . ': manifest.json is missing or is not valid JSON.';
+        if ($manifest === null) {
+            $this->errors[] = sprintf('%s: %s is missing or is not valid JSON.', $folder, $file);
+
+            return null;
+        }
+
+        $string = static fn (string $key): ?string => is_string($manifest[$key] ?? null) && trim($manifest[$key]) !== '' ? trim($manifest[$key]) : null;
+        $id = $string('id');
+
+        if ($id === null || preg_match('/^' . self::ID_PATTERN . '$/', $id) !== 1) {
+            $this->errors[] = sprintf('%s: the "Id" of %s must look like "publisher.name" (lowercase letters, digits and dashes), as required by NeoIDE.', $folder, $file);
 
             return null;
         }
 
         $versions = [];
 
-        foreach (glob(sprintf('%s/packages/%s/*.json', $this->path, $id)) ?: [] as $file) {
-            $version = json_decode((string) file_get_contents($file), true);
+        foreach (glob(sprintf('%s/packages/%s/*.json', $this->path, $folder)) ?: [] as $metadata) {
+            $version = json_decode((string) file_get_contents($metadata), true);
 
-            if (is_array($version) && is_file(substr($file, 0, -5) . '.zip')) {
+            if (is_array($version) && is_file(substr($metadata, 0, -5) . '.zip')) {
                 $versions[$version['version']] = $version;
             }
         }
 
         if ($versions === []) {
-            $this->errors[] = $id . ': not listed, no version packaged yet (run "php bin/neo marketplace:sync").';
+            $this->errors[] = $folder . ': not listed, no version packaged yet (run "php bin/neo marketplace:sync").';
 
             return null;
         }
@@ -261,21 +304,25 @@ class Marketplace
         $versions = array_values($versions);
         $screenshots = array_map('basename', glob($directory . '/screenshots/*') ?: []);
         $icon = array_values(array_filter(['icon.png', 'icon.webp', 'icon.jpg'], static fn (string $name): bool => is_file($directory . '/' . $name)))[0] ?? null;
-        $string = static fn (string $key): ?string => is_string($manifest[$key] ?? null) && trim($manifest[$key]) !== '' ? trim($manifest[$key]) : null;
+        $strings = static fn (string $key): array => array_values(array_filter(is_array($manifest[$key] ?? null) ? $manifest[$key] : [], static fn (mixed $value): bool => is_string($value) && $value !== ''));
 
         return [
             'id' => $id,
             'type' => $type,
             'slug' => $slug,
+            'directory' => $folder,
             'folder' => self::TYPES[$type],
             'name' => $string('name') ?? ucwords(str_replace('-', ' ', $slug)),
-            'author' => $string('author') ?? 'NeoPHP',
+            // Same fallback as NeoIDE: the first part of the id
+            'publisher' => $string('author') ?? explode('.', $id)[0],
             'description' => $string('description') ?? '',
-            'tags' => array_values(array_filter(is_array($manifest['tags'] ?? null) ? $manifest['tags'] : [], static fn (mixed $tag): bool => is_string($tag) && $tag !== '')),
+            'tags' => $strings('tags'),
             'license' => $string('license'),
-            'homepage' => $this->url($manifest['homepage'] ?? null),
+            'repository' => $this->url($manifest['sourceurl'] ?? null),
+            'homepage' => $this->url($manifest['websiteurl'] ?? null),
             'icon' => $icon,
             'screenshots' => array_values(array_filter($screenshots, static fn (string $name): bool => preg_match('/^' . self::MEDIA_PATTERN . '$/', $name) === 1)),
+            'screenshot_urls' => array_values(array_filter(array_map(fn (string $url): ?string => $this->url($url), $strings('screenshots')))),
             'versions' => $versions,
             'latest' => $versions[0],
         ];
@@ -283,7 +330,7 @@ class Marketplace
 
     protected function extensionPath(array $extension): string
     {
-        return $this->path . '/current/' . $extension['id'];
+        return $this->path . '/current/' . $extension['directory'];
     }
 
     protected function url(mixed $url): ?string

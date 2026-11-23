@@ -7,6 +7,7 @@ namespace App\Controller\Api;
 use App\Service\Analytics;
 use App\Service\Marketplace;
 use App\Service\NeoIde;
+use NeoPHP\Component\Container\Attribute\Autowire;
 use NeoPHP\Component\Controller\Contract\AbstractController;
 use NeoPHP\Component\Http\Request\Request;
 use NeoPHP\Component\Http\Response\Response;
@@ -21,8 +22,11 @@ class MarketplaceApiController extends AbstractController
 {
     public const VERSION = '/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/';
 
-    public function __construct(protected Marketplace $marketplace, protected Analytics $analytics)
-    {
+    public function __construct(
+        protected Marketplace $marketplace,
+        protected Analytics $analytics,
+        #[Autowire(env: 'MARKETPLACE_REPOSITORY')] protected string $repository,
+    ) {
     }
 
     /**
@@ -61,7 +65,7 @@ class MarketplaceApiController extends AbstractController
     }
 
     /**
-     * Body: {"ide": "0.4.0", "installed": {"plugin-git-tools": "1.1.0"}}
+     * Body: {"ide": "0.4.0", "installed": {"neophp.mercure": "1.1.0"}}
      * Returns the latest NeoIDE release when it is newer than "ide", and the latest compatible version of every installed extension newer than the installed one.
      */
     #[Route('/updates', name: 'updates', methods: ['POST'])]
@@ -117,14 +121,15 @@ class MarketplaceApiController extends AbstractController
             'id' => $extension['id'],
             'type' => $extension['type'],
             'name' => $extension['name'],
-            'author' => $extension['author'],
+            'publisher' => $extension['publisher'],
             'description' => $extension['description'],
             'tags' => $extension['tags'],
             'license' => $extension['license'],
+            'repository' => $extension['repository'] ?? $this->source($extension),
             'homepage' => $extension['homepage'],
             'page' => $url('marketplace_show'),
             'icon' => $extension['icon'] !== null ? $url('marketplace_media', ['file' => $extension['icon']]) : null,
-            'screenshots' => array_map(static fn (string $file): string => $url('marketplace_media', ['file' => $file]), $extension['screenshots']),
+            'screenshots' => array_slice([...array_map(static fn (string $file): string => $url('marketplace_media', ['file' => $file]), $extension['screenshots']), ...$extension['screenshot_urls']], 0, 8),
             'downloads' => $downloads[$extension['id']] ?? 0,
             'latest' => $this->presentVersion($extension, $extension['latest']),
         ];
@@ -134,6 +139,14 @@ class MarketplaceApiController extends AbstractController
         }
 
         return $data;
+    }
+
+    /**
+     * The folder of the extension in the marketplace repository.
+     */
+    protected function source(array $extension): string
+    {
+        return sprintf('%s/tree/HEAD/%s', preg_replace('/\.git$/', '', $this->repository), $extension['directory']);
     }
 
     protected function presentVersion(array $extension, array $version): array
